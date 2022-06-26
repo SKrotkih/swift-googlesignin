@@ -1,6 +1,6 @@
 //
 //  LocalStorage.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
 
 import Foundation
@@ -12,7 +12,7 @@ struct LocalStorage {
             userDefaults.set(data, forKey: key)
             userDefaults.synchronize()
         } else {
-            throw LVError.message("Encode '\(key)' error")
+            throw LocalError.message("Encode '\(key)' error")
         }
     }
 

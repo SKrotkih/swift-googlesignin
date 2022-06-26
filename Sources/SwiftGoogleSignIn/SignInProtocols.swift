@@ -1,6 +1,6 @@
 //
 //  SignInProtocols.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
 //  Created by Serhii Krotkykh on 10/31/20.
 //  Copyright © 2020 Serhii Krotkykh. All rights reserved.
@@ -40,7 +40,7 @@ protocol SignInConfiguarble {
 
 protocol SignInObservable {
     var userPublisher: Published<GoogleUser?>.Publisher { get }
-    var signInResultPublisher: PassthroughSubject<Bool, LVError> { get }
+    var signInResultPublisher: PassthroughSubject<Bool, LocalError> { get }
     var logOutPublisher: PassthroughSubject<Bool, Never> { get }
 }
 

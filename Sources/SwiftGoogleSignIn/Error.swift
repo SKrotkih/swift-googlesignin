@@ -1,12 +1,12 @@
 //  Error.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
 //  Created by Serhii Krotkykh
 //
 
 import Foundation
 
-enum LVError: Error {
+enum LocalError: Error {
     case message(String)
     case systemMessage(Int, String)
 

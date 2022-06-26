@@ -1,6 +1,6 @@
 //
 //  GoogleSignInConfigurator.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
 //  Created by Serhii Krotkykh
 //
@@ -8,11 +8,11 @@
 import Foundation
 import GoogleSignIn
 
-protocol SignInConfigurator {
+public protocol SignInConfigurator {
     var signInConfig: GIDConfiguration { get }
 }
 
-class GoogleSignInConfigurator: SignInConfigurator {
+public class GoogleSignInConfigurator: SignInConfigurator {
 
     var signInConfig: GIDConfiguration {
         return GIDConfiguration(clientID: clientID)

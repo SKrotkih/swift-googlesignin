@@ -1,6 +1,6 @@
 //
 //  SignInModel.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
@@ -12,7 +12,7 @@ import SwiftUI
 
 // Local user profile information
 
-struct GoogleUser: Codable {
+public struct GoogleUser: Codable {
     let userId: String
     let idToken: String
     let accessToken: String?
@@ -95,7 +95,7 @@ class SignInModel: SignInStorage, ObservableObject {
                 throw SignInError.failedUserData
             }
             try LocalStorage.saveObject(_currentUser, key: userKey)
-        } catch LVError.message(let error) {
+        } catch LocalError.message(let error) {
             fatalError("\(error): Unexpected exception")
         } catch {
             throw SignInError.failedUserData

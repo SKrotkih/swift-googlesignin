@@ -1,6 +1,6 @@
 //
 //  GoogleSignInInteractor.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
 //  Created by Serhii Krotkykh
 //
@@ -9,7 +9,7 @@ import Foundation
 import GoogleSignIn
 import Combine
 
-enum SignInError: Error {
+public enum SignInError: Error {
     case signInError(Error)
     case userIsUndefined
     case permissionsError
@@ -31,7 +31,7 @@ enum SignInError: Error {
 
 public class GoogleSignInInteractor: NSObject, SignInInteractable, ObservableObject {
 
-    let signInResultPublisher = PassthroughSubject<Bool, LVError>()
+    let signInResultPublisher = PassthroughSubject<Bool, LocalError>()
     let logOutPublisher = PassthroughSubject<Bool, Never>()
 
     @Lateinit var configurator: SignInConfigurator

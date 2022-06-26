@@ -1,6 +1,6 @@
 //
 //  LateInit.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
 
 import Foundation
