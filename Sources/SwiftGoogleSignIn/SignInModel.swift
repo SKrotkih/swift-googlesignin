@@ -37,6 +37,8 @@ public class SignInModel: SignInStorage, ObservableObject {
         return _currentUser
     }
 
+    // MARK: - Interface implementtation
+    
     public var userName: String {
         return currentUser?.fullName ?? "undefined"
     }

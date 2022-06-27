@@ -9,7 +9,7 @@ import Foundation
 import GoogleSignIn
 
 public struct GoogleUser: Codable {
-    let userId: String
+    public let userId: String
     let idToken: String
     let accessToken: String?
     let fullName: String
