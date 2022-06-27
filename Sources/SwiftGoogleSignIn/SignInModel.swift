@@ -12,10 +12,10 @@ import SwiftUI
 
 // Local user profile information
 
-class SignInModel: SignInStorage, ObservableObject {
+public class SignInModel: SignInStorage, ObservableObject {
     private let userKey = GoogleUser.keyName
 
-    @Published var user: GoogleUser?
+    @Published public var user: GoogleUser?
 
     private var _currentUser: GoogleUser? {
         didSet {
@@ -37,27 +37,27 @@ class SignInModel: SignInStorage, ObservableObject {
         return _currentUser
     }
 
-    var userName: String {
+    public var userName: String {
         return currentUser?.fullName ?? "undefined"
     }
 
-    var userInfo: String {
+    public var userInfo: String {
         return currentUser?.givenName ?? ""
     }
 
-    var authIdToken: String? {
+    public var authIdToken: String? {
         return currentUser?.idToken
     }
 
-    var authAccessToken: String? {
+    public var authAccessToken: String? {
         return currentUser?.accessToken
     }
 
-    var avatarURL: URL? {
+    public var avatarURL: URL? {
         return currentUser?.profilePicUrl
     }
 
-    func createUserAccount(for user: GIDGoogleUser) throws {
+    public func createUserAccount(for user: GIDGoogleUser) throws {
         do {
             _currentUser = GoogleUser(user)
             if _currentUser == nil {
@@ -71,7 +71,7 @@ class SignInModel: SignInStorage, ObservableObject {
         }
     }
 
-    func deleteLocalUserAccount() {
+    public func deleteLocalUserAccount() {
         _currentUser = nil
     }
 }

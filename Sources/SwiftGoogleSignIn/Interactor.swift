@@ -80,7 +80,7 @@ public class Interactor: NSObject, SignInInteractable, ObservableObject {
 
     private func asyncRestorePreviousUser() async -> GIDGoogleUser {
         return await withCheckedContinuation { continuation in
-            // source from https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
+            // source here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
             GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
                 guard let user = user else { return }
                 continuation.resume(with: .success(user))
