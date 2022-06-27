@@ -24,7 +24,7 @@ protocol SignInConfiguarble {
 
 protocol SignInObservable {
     var userPublisher: Published<GoogleUser?>.Publisher { get }
-    var signInResultPublisher: PassthroughSubject<Bool, LVError> { get }
+    var signInResultPublisher: PassthroughSubject<Bool, LocalError> { get }
     var logOutPublisher: PassthroughSubject<Bool, Never> { get }
 }
 
