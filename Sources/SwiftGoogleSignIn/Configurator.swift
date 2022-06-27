@@ -6,7 +6,7 @@
 
 import UIKit
 
-struct Configurator {
+public struct Configurator {
     
     public static func createSignInInteractor(_ viewController: UIViewController) -> SignInInteractable {
         var interactor: SignInInteractable = Interactor()
