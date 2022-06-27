@@ -10,8 +10,6 @@ import GoogleSignIn
 import Combine
 import SwiftUI
 
-// Local user profile information
-
 public class SignInModel: SignInStorage, ObservableObject {
     private let userKey = GoogleUser.keyName
 
