@@ -30,20 +30,19 @@ public enum SignInError: Error {
 }
 
 public class GoogleSignInInteractor: NSObject, SignInInteractable, ObservableObject {
-
     let signInResultPublisher = PassthroughSubject<Bool, LocalError>()
-    let logOutPublisher = PassthroughSubject<Bool, Never>()
+    public let logOutPublisher = PassthroughSubject<Bool, Never>()
 
     @Lateinit var configurator: SignInConfigurator
     @Lateinit var presenter: UIViewController
     @Lateinit var model: SignInModel
 
     @Published var user: GoogleUser?
-    var userPublisher: Published<GoogleUser?>.Publisher { $user }
+    public var userPublisher: Published<GoogleUser?>.Publisher { $user }
 
-    var cancellableBag = Set<AnyCancellable>()
+    private var cancellableBag = Set<AnyCancellable>()
 
-    func configure() {
+    public func configure() {
         Task {
             await restorePreviousUser()
             suscribeOnUser()
@@ -80,7 +79,7 @@ public class GoogleSignInInteractor: NSObject, SignInInteractable, ObservableObj
     }
 
     // Retrieving user information
-    func signIn() {
+    public func signIn() {
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
         GIDSignIn.sharedInstance.signIn(with: configurator.signInConfig,
                                         presenting: presenter) { [weak self] user, error in
@@ -89,7 +88,7 @@ public class GoogleSignInInteractor: NSObject, SignInInteractable, ObservableObj
         }
     }
 
-    func logOut() {
+    public func logOut() {
         GIDSignIn.sharedInstance.signOut()
         model.deleteLocalUserAccount()
         logOutPublisher.send(true)
@@ -98,7 +97,7 @@ public class GoogleSignInInteractor: NSObject, SignInInteractable, ObservableObj
     // It is highly recommended that you provide users that signed in with Google the
     // ability to disconnect their Google account from your app. If the user deletes their account,
     // you must delete the information that your app obtained from the Google APIs.
-    func disconnect() {
+    public func disconnect() {
         GIDSignIn.sharedInstance.disconnect { error in
             guard error == nil else { return }
             // Google Account disconnected from your app.
@@ -172,7 +171,7 @@ extension GoogleSignInInteractor {
         return havePermissions
     }
 
-    func addPermissions() {
+    public func addPermissions() {
         // Your app should be verified already, so it does not make sense. I think so.
         GIDSignIn.sharedInstance.addScopes(Auth.scopes,
                                            presenting: self.presenter,

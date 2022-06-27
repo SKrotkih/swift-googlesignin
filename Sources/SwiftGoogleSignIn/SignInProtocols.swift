@@ -28,7 +28,7 @@ protocol SignInObservable {
     var logOutPublisher: PassthroughSubject<Bool, Never> { get }
 }
 
-protocol SignInLaunched {
+public protocol SignInLaunched {
     func signIn()
     func logOut()
     func disconnect()
@@ -39,22 +39,22 @@ protocol SignInLaunched {
 
 typealias SignInStorage = SighInDelegate & UserProfile & Authenticatable & UserObservable
 
-protocol SighInDelegate: AnyObject {
+public protocol SighInDelegate: AnyObject {
     func createLocalUserAccount(for user: GIDGoogleUser) throws
     func deleteLocalUserAccount()
 }
 
-protocol UserProfile {
+public protocol UserProfile {
     var userName: String { get }
     var userInfo: String { get }
     var avatarURL: URL? { get }
 }
 
-protocol Authenticatable {
+public protocol Authenticatable {
     var authIdToken: String? { get }
     var authAccessToken: String? { get }
 }
 
-protocol UserObservable: AnyObject {
+public protocol UserObservable: AnyObject {
     var user: GoogleUser? { get }
 }
