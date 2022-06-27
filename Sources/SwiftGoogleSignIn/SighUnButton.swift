@@ -9,6 +9,11 @@ import GoogleSignInSwift
 
 /// SwiftUI content view for the Google Sign In
 public struct SignInButton: View {
+
+    public init(_ action: @escaping () -> ()) {
+        self.action = action
+    }
+
     var action: () -> ()
 
     public var body: some View {
