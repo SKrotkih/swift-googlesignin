@@ -6,7 +6,7 @@
 
 import Foundation
 
-enum LocalError: Error {
+public enum SwiftError: Error {
     case message(String)
     case systemMessage(Int, String)
 

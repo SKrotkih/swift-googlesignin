@@ -12,7 +12,7 @@ struct LocalStorage {
             userDefaults.set(data, forKey: key)
             userDefaults.synchronize()
         } else {
-            throw LocalError.message("Encode '\(key)' error")
+            throw SwiftError.message("Encode '\(key)' error")
         }
     }
 

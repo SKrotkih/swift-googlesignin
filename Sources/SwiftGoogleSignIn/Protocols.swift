@@ -3,7 +3,6 @@
 //  LiveEvents
 //
 //  Created by Serhii Krotkykh on 10/31/20.
-//  Copyright © 2020 Serhii Krotkykh. All rights reserved.
 //
 
 import Foundation
@@ -12,20 +11,7 @@ import GoogleSignIn
 
 // MARK: - SignIn Interactor Protocol
 
-typealias SignInInteractable = SignInObservable & SignInConfiguarble & SignInLaunched
-
-protocol SignInConfiguarble {
-    var configurator: SignInConfigurator { get set }
-    var presenter: UIViewController { get set }
-    var model: SignInModel { get set }
-    func configure()
-}
-
-protocol SignInObservable {
-    var userPublisher: Published<GoogleUser?>.Publisher { get }
-    var signInResultPublisher: PassthroughSubject<Bool, LocalError> { get }
-    var logOutPublisher: PassthroughSubject<Bool, Never> { get }
-}
+public typealias SignInInteractable = SignInLaunched & SignInObservable
 
 public protocol SignInLaunched {
     func signIn()
@@ -34,12 +20,18 @@ public protocol SignInLaunched {
     func addPermissions()
 }
 
+public protocol SignInObservable {
+    var user: Published<GoogleUser?>.Publisher { get }
+    var loginResult: PassthroughSubject<Bool, SwiftError> { get }
+    var logoutResult: PassthroughSubject<Bool, Never> { get }
+}
+
 // MARK: - Model's protocols
 
 typealias SignInStorage = SighInDelegate & UserProfile & Authenticatable & UserObservable
 
 public protocol SighInDelegate: AnyObject {
-    func createLocalUserAccount(for user: GIDGoogleUser) throws
+    func createUserAccount(for user: GIDGoogleUser) throws
     func deleteLocalUserAccount()
 }
 

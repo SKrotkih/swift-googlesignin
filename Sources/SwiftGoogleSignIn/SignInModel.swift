@@ -12,37 +12,6 @@ import SwiftUI
 
 // Local user profile information
 
-public struct GoogleUser: Codable {
-    let userId: String
-    let idToken: String
-    let accessToken: String?
-    let fullName: String
-    let givenName: String
-    let familyName: String
-    let profilePicUrl: URL?
-    let email: String
-
-    init?(_ user: GIDGoogleUser) {
-        if let userId = user.userID,
-           let idToken = user.authentication.idToken {
-            self.userId = userId
-            self.idToken = idToken
-            accessToken = user.authentication.accessToken
-            fullName = user.profile?.name ?? ""
-            givenName = user.profile?.givenName ?? ""
-            familyName = user.profile?.familyName ?? ""
-            profilePicUrl = user.profile?.imageURL(withDimension: 320)
-            email = user.profile?.email ?? ""
-        } else {
-            return nil
-        }
-    }
-
-    static var keyName: String {
-        return String(describing: self)
-    }
-}
-
 class SignInModel: SignInStorage, ObservableObject {
     private let userKey = GoogleUser.keyName
 
@@ -88,14 +57,14 @@ class SignInModel: SignInStorage, ObservableObject {
         return currentUser?.profilePicUrl
     }
 
-    func createLocalUserAccount(for user: GIDGoogleUser) throws {
+    func createUserAccount(for user: GIDGoogleUser) throws {
         do {
             _currentUser = GoogleUser(user)
             if _currentUser == nil {
                 throw SignInError.failedUserData
             }
             try LocalStorage.saveObject(_currentUser, key: userKey)
-        } catch LocalError.message(let error) {
+        } catch SwiftError.message(let error) {
             fatalError("\(error): Unexpected exception")
         } catch {
             throw SignInError.failedUserData

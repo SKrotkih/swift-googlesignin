@@ -8,14 +8,10 @@ import UIKit
 
 public struct Configurator {
     
-    public static func createSignInInteractor(_ viewController: UIViewController) -> SignInInteractable {
-        var interactor: SignInInteractable = Interactor()
-        interactor.configurator = GoogleSignInConfigurator()
-        interactor.presenter = viewController
-        interactor.model = SignInModel()
-        interactor.configure()
+    public static func configureInteractor(with presenter: UIViewController) -> SignInInteractable {
+        var interactor: SignInInteractable = Interactor(configurator: GoogleSignInConfigurator(),
+                                                        presenter: presenter,
+                                                        model: SignInModel())
         return interactor
     }
-
-    
 }
