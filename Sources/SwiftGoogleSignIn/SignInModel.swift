@@ -13,6 +13,8 @@ import SwiftUI
 public class SignInModel: SignInStorage, ObservableObject {
     private let userKey = GoogleUser.keyName
 
+    public init() {}
+    
     @Published public var user: GoogleUser?
 
     private var _currentUser: GoogleUser? {
