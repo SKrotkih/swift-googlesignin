@@ -14,7 +14,7 @@ public protocol SignInConfigurator {
 
 public class GoogleSignInConfigurator: SignInConfigurator {
 
-    var signInConfig: GIDConfiguration {
+    public var signInConfig: GIDConfiguration {
         return GIDConfiguration(clientID: clientID)
     }
 

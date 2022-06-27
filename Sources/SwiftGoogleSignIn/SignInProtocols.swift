@@ -1,6 +1,6 @@
 //
 //  SignInProtocols.swift
-//  SwiftGoogleSignIn
+//  LiveEvents
 //
 //  Created by Serhii Krotkykh on 10/31/20.
 //  Copyright © 2020 Serhii Krotkykh. All rights reserved.
@@ -10,22 +10,6 @@ import Foundation
 import Combine
 import GoogleSignIn
 
-// MARK: - SignIn ViewModel Protocol
-
-typealias SignInViewModel = SignInInOutput & SignInInput & UserObserver
-
-protocol SignInInOutput {
-    func signInResultListener()
-}
-
-protocol SignInInput {
-    func signIn()
-    func logOut()
-}
-
-protocol UserObserver {
-    var user: GoogleUser? { get }
-}
 
 // MARK: - SignIn Interactor Protocol
 
@@ -40,7 +24,7 @@ protocol SignInConfiguarble {
 
 protocol SignInObservable {
     var userPublisher: Published<GoogleUser?>.Publisher { get }
-    var signInResultPublisher: PassthroughSubject<Bool, LocalError> { get }
+    var signInResultPublisher: PassthroughSubject<Bool, LVError> { get }
     var logOutPublisher: PassthroughSubject<Bool, Never> { get }
 }
 
