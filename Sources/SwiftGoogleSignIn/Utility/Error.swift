@@ -28,3 +28,23 @@ public enum SwiftError: Error {
         #endif
     }
 }
+
+enum SignInError: Error {
+    case signInError(Error)
+    case userIsUndefined
+    case permissionsError
+    case failedUserData
+
+    func localizedString() -> String {
+        switch self {
+        case .signInError:
+            return "The user has not signed in before or he has since signed out"
+        case .userIsUndefined:
+            return "The user has not signed in before or he has since signed out"
+        case .permissionsError:
+            return "Please add scopes to have ability to manage your YouTube videos. The app will not work properly"
+        case .failedUserData:
+            return "User data is wrong. Please try again later"
+        }
+    }
+}

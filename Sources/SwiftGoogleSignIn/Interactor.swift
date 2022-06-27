@@ -10,30 +10,13 @@ import GoogleSignIn
 import GoogleSignInSwift
 import Combine
 
-enum SignInError: Error {
-    case signInError(Error)
-    case userIsUndefined
-    case permissionsError
-    case failedUserData
-
-    func localizedString() -> String {
-        switch self {
-        case .signInError:
-            return "The user has not signed in before or he has since signed out"
-        case .userIsUndefined:
-            return "The user has not signed in before or he has since signed out"
-        case .permissionsError:
-            return "Please add scopes to have ability to manage your YouTube videos. The app will not work properly"
-        case .failedUserData:
-            return "User data is wrong. Please try again later"
-        }
-    }
-}
-
 public class Interactor: NSObject, SignInInteractable, ObservableObject {
+    // SignInObservable protocol
     public let loginResult = PassthroughSubject<Bool, SwiftError>()
     public let logoutResult = PassthroughSubject<Bool, Never>()
-
+    public var user: Published<GoogleUser?>.Publisher { $currentUser }
+    
+    // lifecycle
     init(configurator: SignInConfigurator,
          presenter: UIViewController,
          model: SignInModel) {
@@ -44,22 +27,22 @@ public class Interactor: NSObject, SignInInteractable, ObservableObject {
         self.configure()
     }
     
+    // Private, Internal variable
     private var configurator: SignInConfigurator
     private var presenter: UIViewController
     private var model: SignInModel
-
+    
     @Published private var currentUser: GoogleUser?
-    public var user: Published<GoogleUser?>.Publisher { $currentUser }
-
+    
     private var cancellableBag = Set<AnyCancellable>()
-
-    func configure() {
+    
+    private func configure() {
         Task {
             await restorePreviousUser()
             suscribeOnUser()
         }
     }
-
+    
     private func suscribeOnUser() {
         model.$user
             .sink { [unowned self] in
@@ -67,7 +50,7 @@ public class Interactor: NSObject, SignInInteractable, ObservableObject {
             }
             .store(in: &self.cancellableBag)
     }
-
+    
     private func restorePreviousUser() async {
         do {
             let previousUser = await asyncRestorePreviousUser()
@@ -78,7 +61,7 @@ public class Interactor: NSObject, SignInInteractable, ObservableObject {
             fatalError("Unexpected exception")
         }
     }
-
+    
     private func asyncRestorePreviousUser() async -> GIDGoogleUser {
         return await withCheckedContinuation { continuation in
             // source here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
@@ -88,7 +71,11 @@ public class Interactor: NSObject, SignInInteractable, ObservableObject {
             }
         }
     }
+}
 
+// MARK: - SignInLaunched protocol implementstion
+
+extension Interactor {
     // Retrieving user information
     public func signIn() {
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
@@ -98,13 +85,13 @@ public class Interactor: NSObject, SignInInteractable, ObservableObject {
             self.handleSignInResult(user, error)
         }
     }
-
+    
     public func logOut() {
         GIDSignIn.sharedInstance.signOut()
         model.deleteLocalUserAccount()
         logoutResult.send(true)
     }
-
+    
     // It is highly recommended that you provide users that signed in with Google the
     // ability to disconnect their Google account from your app. If the user deletes their account,
     // you must delete the information that your app obtained from the Google APIs.
@@ -142,7 +129,7 @@ extension Interactor {
             fatalError("Unexpected exception")
         }
     }
-
+    
     private func parseSignInResult(_ user: GIDGoogleUser?, _ error: Error?) throws {
         if let error = error {
             throw SignInError.signInError(error)
@@ -174,14 +161,14 @@ extension Interactor {
         static let scope3 = "https://www.googleapis.com/auth/youtube.force-ssl"
         static let scopes = [scope1, scope2, scope3]
     }
-
+    
     private func checkPermissions(for user: GIDGoogleUser) -> Bool {
         guard let grantedScopes = user.grantedScopes else { return false }
         let currentScopes = grantedScopes.compactMap { $0 }
         let havePermissions = currentScopes.contains(where: { Auth.scopes.contains($0) })
         return havePermissions
     }
-
+    
     public func addPermissions() {
         // Your app should be verified already, so it does not make sense. I think so.
         GIDSignIn.sharedInstance.addScopes(Auth.scopes,
