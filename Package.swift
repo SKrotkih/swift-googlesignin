@@ -18,7 +18,8 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "SwiftGoogleSignIn",
-            dependencies: [.product(name: "GoogleSignIn", package: "GoogleSignIn-iOS")]),
+            dependencies: [.product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
+                           .product(name: "GoogleSignInSwift", package: "GoogleSignIn-iOS")]),
         .testTarget(
             name: "SwiftGoogleSignInTests",
             dependencies: ["SwiftGoogleSignIn",

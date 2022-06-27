@@ -7,6 +7,7 @@
 
 import Foundation
 import GoogleSignIn
+import GoogleSignInSwift
 import Combine
 
 enum SignInError: Error {
