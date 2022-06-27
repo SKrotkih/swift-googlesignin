@@ -1,5 +1,5 @@
 //
-//  SignInProtocols.swift
+//  Protocols.swift
 //  LiveEvents
 //
 //  Created by Serhii Krotkykh on 10/31/20.
@@ -9,7 +9,6 @@
 import Foundation
 import Combine
 import GoogleSignIn
-
 
 // MARK: - SignIn Interactor Protocol
 

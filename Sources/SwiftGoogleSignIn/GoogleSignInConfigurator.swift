@@ -8,11 +8,11 @@
 import Foundation
 import GoogleSignIn
 
-public protocol SignInConfigurator {
+protocol SignInConfigurator {
     var signInConfig: GIDConfiguration { get }
 }
 
-public class GoogleSignInConfigurator: SignInConfigurator {
+class GoogleSignInConfigurator: SignInConfigurator {
 
     public var signInConfig: GIDConfiguration {
         return GIDConfiguration(clientID: clientID)
