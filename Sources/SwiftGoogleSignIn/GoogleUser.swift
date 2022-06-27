@@ -10,13 +10,13 @@ import GoogleSignIn
 
 public struct GoogleUser: Codable {
     public let userId: String
-    let idToken: String
-    let accessToken: String?
-    let fullName: String
-    let givenName: String
-    let familyName: String
-    let profilePicUrl: URL?
-    let email: String
+    public let idToken: String
+    public let accessToken: String?
+    public let fullName: String
+    public let givenName: String
+    public let familyName: String
+    public let profilePicUrl: URL?
+    public let email: String
 
     init?(_ user: GIDGoogleUser) {
         if let userId = user.userID,
