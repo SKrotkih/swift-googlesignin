@@ -8,10 +8,10 @@ import SwiftUI
 import GoogleSignInSwift
 
 /// SwiftUI content view for the Google Sign In
-struct SignInButton: View {
+public struct SignInButton: View {
     var action: () -> ()
 
-    var body: some View {
+    public var body: some View {
         VStack {
             Spacer()
             // https://developers.google.com/identity/sign-in/ios/sign-in#4_add_a_google_sign-in_button
