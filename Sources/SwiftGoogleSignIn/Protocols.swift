@@ -28,12 +28,7 @@ public protocol SignInObservable {
 
 // MARK: - Model's protocols
 
-typealias SignInStorage = SighInDelegate & UserProfile & Authenticatable & UserObservable
-
-public protocol SighInDelegate: AnyObject {
-    func createUserAccount(for user: GIDGoogleUser) throws
-    func deleteLocalUserAccount()
-}
+typealias SignInStorage = UserProfile & Authenticatable & UserObservable
 
 public protocol UserProfile {
     var userName: String { get }

@@ -16,7 +16,7 @@ public struct SignInButton: View {
         GoogleSignInButton(scheme: .dark,
                            style: .standard,
                            action: {
-            session.interactor?.signIn()
+            session.logIn()
         })
     }
 }

@@ -11,7 +11,7 @@ import Combine
 public let session = Session()
 
 public class Session {
-    var interactor: Interactor?
+    private var interactor: Interactor?
     
     public func initialize() {
         interactor = Interactor(configurator: GoogleSignInConfigurator(),
@@ -22,7 +22,7 @@ public class Session {
         interactor?.presenter = presenter
     }
     
-    func signIn() {
+    func logIn() {
         interactor?.signIn()
     }
     
@@ -38,15 +38,15 @@ public class Session {
         interactor?.disconnect()
     }
     
-    public var logoutResult: PassthroughSubject<Bool, Never> {
-        return interactor!.logoutResult
+    public var logoutResult: PassthroughSubject<Bool, Never>? {
+        return interactor?.logoutResult
     }
     
-    public var loginResult: PassthroughSubject<Bool, SwiftError> {
-        return interactor!.loginResult
+    public var loginResult: PassthroughSubject<Bool, SwiftError>? {
+        return interactor?.loginResult
     }
     
-    public var user: Published<GoogleUser?>.Publisher {
-        return interactor!.user
+    public var user: Published<GoogleUser?>.Publisher? {
+        return interactor?.user
     }
 }
