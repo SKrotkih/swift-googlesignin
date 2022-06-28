@@ -9,9 +9,15 @@ import UIKit
 import GoogleSignIn
 
 public class SignInAppDelegate: NSObject, UIApplicationDelegate {
+    var scopePermissions: [String]?
+    
+    init(_ scopePermissions: [String]? = nil) {
+        self.scopePermissions = scopePermissions
+    }
+    
     public func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        session.initialize()
+        session.initialize(scopePermissions)
         return true
     }
     

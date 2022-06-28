@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  SignInButton.swift
 //  
 //  Created by Serhii Krotkykh on 6/27/22.
 //

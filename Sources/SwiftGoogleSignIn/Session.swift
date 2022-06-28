@@ -13,9 +13,10 @@ public let session = Session()
 public class Session {
     private var interactor: Interactor?
     
-    public func initialize() {
+    public func initialize(_ scopePermissions: [String]?) {
         interactor = Interactor(configurator: GoogleSignInConfigurator(),
-                                model: SignInModel())
+                                model: SignInModel(),
+                                scopePermissions: scopePermissions)
     }
     
     public func addDependency(on presenter: UIViewController) {

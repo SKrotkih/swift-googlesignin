@@ -18,9 +18,11 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
     
     // lifecycle
     init(configurator: SignInConfigurator,
-         model: SignInModel) {
+         model: SignInModel,
+         scopePermissions: [String]?) {
         self.configurator = configurator
         self.model = model
+        self.scopePermissions = scopePermissions
         super.init()
         self.configure()
     }
@@ -30,6 +32,7 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
     // Private, Internal variable
     private var configurator: SignInConfigurator
     private var model: SignInModel
+    private var scopePermissions: [String]?
     
     @Published private var currentUser: GoogleUser?
     
@@ -153,26 +156,19 @@ extension Interactor {
 // MARK: - Check/Add the Scopes
 
 extension Interactor {
-    fileprivate struct Auth {
-        // There are needed sensitive scopes to have ability to work properly
-        // Make sure they are presented in your app. Then send request on verification
-        static let scope1 = "https://www.googleapis.com/auth/youtube"
-        static let scope2 = "https://www.googleapis.com/auth/youtube.readonly"
-        static let scope3 = "https://www.googleapis.com/auth/youtube.force-ssl"
-        static let scopes = [scope1, scope2, scope3]
-    }
-    
     private func checkPermissions(for user: GIDGoogleUser) -> Bool {
         guard let grantedScopes = user.grantedScopes else { return false }
+        guard let scopePermissions = scopePermissions else { return true }
         let currentScopes = grantedScopes.compactMap { $0 }
-        let havePermissions = currentScopes.contains(where: { Auth.scopes.contains($0) })
+        let havePermissions = currentScopes.contains(where: { scopePermissions.contains($0) })
         return havePermissions
     }
     
     func addPermissions() {
         guard let presenter = presenter else { return }
+        guard let scopePermissions = scopePermissions else { return}
         // Your app should be verified already, so it does not make sense. I think so.
-        GIDSignIn.sharedInstance.addScopes(Auth.scopes,
+        GIDSignIn.sharedInstance.addScopes(scopePermissions,
                                            presenting: presenter,
                                            callback: { [weak self] user, error in
             self?.handleSignInResult(user, error)
