@@ -11,7 +11,7 @@ import GoogleSignIn
 public class SignInAppDelegate: NSObject, UIApplicationDelegate {
     var scopePermissions: [String]?
     
-    init(_ scopePermissions: [String]? = nil) {
+    public init(_ scopePermissions: [String]? = nil) {
         self.scopePermissions = scopePermissions
     }
     
