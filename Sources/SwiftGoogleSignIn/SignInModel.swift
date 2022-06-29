@@ -71,27 +71,27 @@ public class SignInModel: SignInStorage, ObservableObject {
         }
     }
 
-    // MARK: - Interface implementtation
-    
-    public var userName: String {
-        return currentUser?.fullName ?? "undefined"
-    }
-
-    public var userInfo: String {
-        return currentUser?.givenName ?? ""
-    }
-
-    public var authIdToken: String? {
-        return currentUser?.idToken
-    }
-
-    public var authAccessToken: String? {
-        return currentUser?.accessToken
-    }
-
-    public var avatarURL: URL? {
-        return currentUser?.profilePicUrl
-    }
+//    // MARK: - Interface implementtation
+//
+//    public var userName: String {
+//        return currentUser?.fullName ?? "undefined"
+//    }
+//
+//    public var userInfo: String {
+//        return currentUser?.givenName ?? ""
+//    }
+//
+//    public var authIdToken: String? {
+//        return currentUser?.idToken
+//    }
+//
+//    public var authAccessToken: String? {
+//        return currentUser?.accessToken
+//    }
+//
+//    public var avatarURL: URL? {
+//        return currentUser?.profilePicUrl
+//    }
 
     public func deleteLocalUserAccount() {
         _currentUser = nil

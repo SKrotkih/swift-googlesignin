@@ -15,6 +15,5 @@ How to install it:
 - make sure the SwiftGoogleSignIn package name is presented there 
 
 How to use it:
-[There is an example of using the package.](https://github.com/SKrotkih/YTLiveStreaming)
-
+- [There is an example of using the package.](https://github.com/SKrotkih/YTLiveStreaming)
 
