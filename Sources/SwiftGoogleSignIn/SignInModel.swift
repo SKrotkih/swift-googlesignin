@@ -10,7 +10,7 @@ import GoogleSignIn
 import Combine
 import SwiftUI
 
-public class SignInModel: SignInStorage, ObservableObject {
+public class SignInModel: UserObservable, ObservableObject {
     private let userKey = GoogleUser.keyName
 
     public init() {}
@@ -70,28 +70,6 @@ public class SignInModel: SignInStorage, ObservableObject {
             throw SignInError.failedUserData
         }
     }
-
-//    // MARK: - Interface implementtation
-//
-//    public var userName: String {
-//        return currentUser?.fullName ?? "undefined"
-//    }
-//
-//    public var userInfo: String {
-//        return currentUser?.givenName ?? ""
-//    }
-//
-//    public var authIdToken: String? {
-//        return currentUser?.idToken
-//    }
-//
-//    public var authAccessToken: String? {
-//        return currentUser?.accessToken
-//    }
-//
-//    public var avatarURL: URL? {
-//        return currentUser?.profilePicUrl
-//    }
 
     public func deleteLocalUserAccount() {
         _currentUser = nil

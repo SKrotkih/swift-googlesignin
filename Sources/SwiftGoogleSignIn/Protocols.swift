@@ -28,19 +28,6 @@ public protocol SignInObservable {
 
 // MARK: - Model's protocols
 
-typealias SignInStorage = UserObservable
-
-//public protocol UserProfile {
-//    var userName: String { get }
-//    var userInfo: String { get }
-//    var avatarURL: URL? { get }
-//}
-//
-//public protocol Authenticatable {
-//    var authIdToken: String? { get }
-//    var authAccessToken: String? { get }
-//}
-
 public protocol UserObservable: AnyObject {
     var user: GoogleUser? { get }
 }
