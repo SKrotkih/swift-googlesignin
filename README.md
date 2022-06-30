@@ -16,6 +16,17 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
 - open your Xcode project settings - PROJECT section on the Package Dependencies tab
 - make sure the SwiftGoogleSignIn package name is presented there 
 
+## Interface
+
+### - Session:
+#### - func initialize(_ scopePermissions: [String]?)
+       where scopePermissions - your Google Cloud app sensitive scopes (must be verified):
+       
+<img width="496" alt="Screenshot 2022-06-30 at 06 53 48" src="https://user-images.githubusercontent.com/2775621/176594084-2397a49f-7539-488b-81c2-a5ce0c0eaaf6.png">
+   
+   for example "https://www.googleapis.com/auth/youtube.readonly"
+
+
 ## How to use it:
 
 - initialize the package:
@@ -77,5 +88,8 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
             }
          })
          .store(in: &cancellableBag)
+
+
+
 
  Note: [There is an example of using the package.](https://github.com/SKrotkih/YTLiveStreaming)
