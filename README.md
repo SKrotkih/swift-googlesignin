@@ -19,11 +19,17 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
 ## Interface
 
 ### - Class Session:
-#### - func initialize(_ scope: [String]?)
-####    scope - your Google Cloud app sensitive scopes (must be verified):
+#### - GoogleSignIn.session.initialize(scopes)
+#### whwre scopes is your Google Cloud app sensitive scopes (must be verified):
 <img width="496" alt="Screenshot 2022-06-30 at 06 53 48" src="https://user-images.githubusercontent.com/2775621/176594084-2397a49f-7539-488b-81c2-a5ce0c0eaaf6.png">
-   
-   for example "https://www.googleapis.com/auth/youtube.readonly"
+   for example: 
+      let scopes = [
+         "https://www.googleapis.com/auth/youtube",
+         "https://www.googleapis.com/auth/youtube.readonly",
+         "https://www.googleapis.com/auth/youtube.force-ssl"
+      ]
+     or 
+     let scopes: [String]? = nil
 
 
 ## How to use it:
