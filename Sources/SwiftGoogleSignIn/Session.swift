@@ -19,6 +19,10 @@ public class Session {
                                 scopePermissions: scopePermissions)
     }
     
+    public func openUrl(_ url: URL) -> Bool {
+        return interactor?.openUrl(url) ?? false
+    }
+    
     public func addDependency(on presenter: UIViewController) {
         interactor?.presenter = presenter
     }

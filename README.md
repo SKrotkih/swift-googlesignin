@@ -16,43 +16,29 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
 - open your Xcode project settings - PROJECT section on the Package Dependencies tab
 - make sure the SwiftGoogleSignIn package name is presented there 
 
-## Interface
+## How to use the package:
 
-### - Class Session:
-#### - GoogleSignIn.session.initialize(scopes)
-#### whwre scopes is your Google Cloud app sensitive scopes (must be verified):
-<img width="496" alt="Screenshot 2022-06-30 at 06 53 48" src="https://user-images.githubusercontent.com/2775621/176594084-2397a49f-7539-488b-81c2-a5ce0c0eaaf6.png">
-   for example: 
-      let scopes = [
-         "https://www.googleapis.com/auth/youtube",
-         "https://www.googleapis.com/auth/youtube.readonly",
-         "https://www.googleapis.com/auth/youtube.force-ssl"
-      ]
-     or 
-     let scopes: [String]? = nil
-
-
-## How to use it:
-
-- initialize the package:
+- initialize stage:
 
    import SwiftGoogleSignIn
 
    func application(_ application: UIApplication,
                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-      ...
-
-      // There are needed sensitive scopes to have ability to work properly
-      // Make sure they are presented in your app. Then send request on an verification
-      let googleAPIscopePermissions = [
+      // There are needed sensitive scopes for Google APIs to have ability to work properly
+      // Make sure they are presented in your app. Then send request on verification
+      let googleAPIscopes: [String]? = [
           "https://www.googleapis.com/auth/youtube",
           "https://www.googleapis.com/auth/youtube.readonly",
           "https://www.googleapis.com/auth/youtube.force-ssl"
+      ]
+      SwiftGoogleSignIn.session.initialize(googleAPIscopes)
+   }
    
-      SignInAppDelegate(googleAPIscopePermissions).application(application,
-         didFinishLaunchingWithOptions: launchOptions)
-      ...    
-    
+   func application(_ application: UIApplication,
+                    open url: URL,
+                    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+   ) -> Bool {
+       return SwiftGoogleSignIn.session.openUrl(url)
    }
    
 - put 'Sign In' button:

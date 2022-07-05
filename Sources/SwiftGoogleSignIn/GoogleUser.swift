@@ -8,7 +8,7 @@
 import Foundation
 import GoogleSignIn
 
-public struct GoogleUser: Codable {
+public struct GoogleUser: Codable, Equatable {
     public let userId: String
     public let idToken: String
     public let accessToken: String?
@@ -37,4 +37,19 @@ public struct GoogleUser: Codable {
     static var keyName: String {
         return String(describing: self)
     }
+}
+
+func ==(lUser: GoogleUser?, rUser: GoogleUser?) -> Bool {
+    var isNotEqual = false
+    switch (lUser, rUser) {
+    case (nil, nil):
+        break
+    case (nil, _), (_, nil):
+        isNotEqual = true
+    default:
+        if lUser?.userId != rUser?.userId {
+            isNotEqual = true
+        }
+    }
+    return !isNotEqual
 }

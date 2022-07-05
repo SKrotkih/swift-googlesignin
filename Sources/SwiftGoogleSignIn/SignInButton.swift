@@ -11,9 +11,11 @@ import GoogleSignInSwift
 public struct SignInButton: View {
     public init() { }
     
+    @Environment(\.colorScheme) var colorSheme: ColorScheme
+    
     public var body: some View {
         // https://developers.google.com/identity/sign-in/ios/sign-in#4_add_a_google_sign-in_button
-        GoogleSignInButton(scheme: .dark,
+        GoogleSignInButton(scheme: self.colorSheme == .dark ? .dark : .light,
                            style: .standard,
                            action: {
             session.logIn()

@@ -17,35 +17,22 @@ public class SignInModel: UserObservable, ObservableObject {
     
     @Published public var user: GoogleUser?
 
+    public func deleteLocalUserAccount() {
+        _currentUser = nil
+    }
+
     private var _currentUser: GoogleUser? {
         didSet {
             if _currentUser == nil {
                 LocalStorage.removeObject(key: userKey)
             }
-            if isNotEqual(oldUser: oldValue, newUser: _currentUser) {
+            if oldValue != _currentUser {
                 user = _currentUser
             }
         }
     }
-
-    private func isNotEqual(oldUser: GoogleUser?, newUser: GoogleUser?) -> Bool {
-        let oldUserId: String? = oldUser?.userId
-        let newUserId: String? = newUser?.userId
-        var isNotEqual = false
-        switch (oldUserId, newUserId) {
-        case (nil, nil):
-            break
-        case (nil, _), (_, nil):
-            isNotEqual = true
-        default:
-            if oldUserId != newUserId {
-                isNotEqual = true
-            }
-        }
-        return isNotEqual
-    }
     
-    private var currentUser: GoogleUser? {
+    var currentUser: GoogleUser? {
         if _currentUser == nil {
             if let currentGoogleUser = GIDSignIn.sharedInstance.currentUser {
                 _currentUser = GoogleUser(currentGoogleUser)
@@ -69,9 +56,5 @@ public class SignInModel: UserObservable, ObservableObject {
         } catch {
             throw SignInError.failedUserData
         }
-    }
-
-    public func deleteLocalUserAccount() {
-        _currentUser = nil
     }
 }

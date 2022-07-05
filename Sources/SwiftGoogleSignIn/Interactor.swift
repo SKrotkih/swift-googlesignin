@@ -26,9 +26,9 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
         super.init()
         self.configure()
     }
-
+    
     var presenter: UIViewController?
-
+    
     // Private, Internal variable
     private var configurator: SignInConfigurator
     private var model: SignInModel
@@ -46,17 +46,25 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
     }
     
     private func suscribeOnUser() {
-        model.$user
-            .sink { [unowned self] in
-                self.currentUser = $0
-            }
-            .store(in: &self.cancellableBag)
+        if #available(iOS 14, *) {
+            model
+                .$user
+                .assign(to: &self.$currentUser)
+        } else {
+            model.$user
+                .sink {
+                    self.currentUser = $0
+                }
+                .store(in: &self.cancellableBag)
+        }
     }
     
     private func restorePreviousUser() async {
         do {
-            let previousUser = await asyncRestorePreviousUser()
-            try model.createUserAccount(for: previousUser)
+            if model.currentUser == nil {
+                let previousUser = await asyncRestorePreviousUser()
+                try model.createUserAccount(for: previousUser)
+            }
         } catch SignInError.failedUserData {
             fatalError("Unexpected exception")
         } catch {
@@ -105,6 +113,16 @@ extension Interactor {
             // Perform clean-up actions, such as deleting data associated with the
             //   disconnected account.
             self.logOut()
+        }
+    }
+
+    func openUrl(_ url: URL) -> Bool {
+        // The source looking for here: https://developers.google.com/identity/sign-in/ios/sign-in#ios_uiapplicationdelegate
+        if GIDSignIn.sharedInstance.handle(url) {
+            return true
+        } else {
+            // Handle other custom URL types.
+            return false
         }
     }
 }
