@@ -67,4 +67,7 @@ public class Session {
         return model?.user?.fullName
     }
     
+    public var userProfilePictureUrl: URL? {
+        return model?.user?.profilePicUrl
+    }
 }
