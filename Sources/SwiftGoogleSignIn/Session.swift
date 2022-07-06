@@ -62,4 +62,9 @@ public class Session {
     public var oauthAccessToken: String? {
         return model?.user?.accessToken
     }
+    
+    public var userFullName: String? {
+        return model?.user?.fullName
+    }
+    
 }
