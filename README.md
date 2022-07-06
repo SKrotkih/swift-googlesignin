@@ -22,16 +22,15 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
 
    import SwiftGoogleSignIn
 
+   // There are needed sensitive scopes for Google APIs to have ability to work properly
+   // Make sure they are presented in your app. Then send request on verification
+   let googleAPIscopes: [String]? = ["https://www.googleapis.com/auth/youtube",
+       "https://www.googleapis.com/auth/youtube.readonly",
+       "https://www.googleapis.com/auth/youtube.force-ssl"]
+
    func application(_ application: UIApplication,
                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-      // There are needed sensitive scopes for Google APIs to have ability to work properly
-      // Make sure they are presented in your app. Then send request on verification
-      let googleAPIscopes: [String]? = [
-          "https://www.googleapis.com/auth/youtube",
-          "https://www.googleapis.com/auth/youtube.readonly",
-          "https://www.googleapis.com/auth/youtube.force-ssl"
-      ]
-      SwiftGoogleSignIn.session.initialize(googleAPIscopes)
+      SwiftGoogleSignIn.session.initialize(googleAPIscopes) // nil is a defaut value 
    }
    
    func application(_ application: UIApplication,

@@ -12,10 +12,14 @@ public let session = Session()
 
 public class Session {
     private var interactor: Interactor?
+    private var model: SignInModel?
+    private var configurator: GoogleSignInConfigurator?
     
     public func initialize(_ scopePermissions: [String]?) {
-        interactor = Interactor(configurator: GoogleSignInConfigurator(),
-                                model: SignInModel(),
+        model = SignInModel()
+        configurator = GoogleSignInConfigurator()
+        interactor = Interactor(configurator: configurator!,
+                                model: model!,
                                 scopePermissions: scopePermissions)
     }
     
@@ -53,5 +57,9 @@ public class Session {
     
     public var user: Published<GoogleUser?>.Publisher? {
         return interactor?.user
+    }
+
+    public var oauthAccessToken: String? {
+        return model?.user?.accessToken
     }
 }
