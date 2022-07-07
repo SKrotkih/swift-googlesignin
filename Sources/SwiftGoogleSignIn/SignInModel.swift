@@ -15,7 +15,7 @@ public class SignInModel: UserObservable, ObservableObject {
 
     public init() {}
     
-    @Published public var user: GoogleUser?
+    public var user = CurrentValueSubject<GoogleUser?, Never>(nil)
 
     public func deleteLocalUserAccount() {
         _currentUser = nil
@@ -26,8 +26,9 @@ public class SignInModel: UserObservable, ObservableObject {
             if _currentUser == nil {
                 LocalStorage.removeObject(key: userKey)
             }
+            // PassthroughSubject imitate here:
             if oldValue != _currentUser {
-                user = _currentUser
+                user.send(_currentUser)
             }
         }
     }

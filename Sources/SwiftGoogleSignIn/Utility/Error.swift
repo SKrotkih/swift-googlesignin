@@ -6,7 +6,7 @@
 
 import Foundation
 
-public enum SwiftError: Error {
+public enum SwiftError: Swift.Error {
     case message(String)
     case systemMessage(Int, String)
 
@@ -29,7 +29,7 @@ public enum SwiftError: Error {
     }
 }
 
-enum SignInError: Error {
+enum SignInError: Swift.Error {
     case signInError(Error)
     case userIsUndefined
     case permissionsError

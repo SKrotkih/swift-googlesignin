@@ -60,14 +60,14 @@ public class Session {
     }
 
     public var oauthAccessToken: String? {
-        return model?.user?.accessToken
+        return model?.user.value?.accessToken
     }
     
     public var userFullName: String? {
-        return model?.user?.fullName
+        return model?.user.value?.fullName
     }
     
     public var userProfilePictureUrl: URL? {
-        return model?.user?.profilePicUrl
+        return model?.user.value?.profilePicUrl
     }
 }

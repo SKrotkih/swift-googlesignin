@@ -46,17 +46,13 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
     }
     
     private func suscribeOnUser() {
-        if #available(iOS 14, *) {
-            model
-                .$user
-                .assign(to: &self.$currentUser)
-        } else {
-            model.$user
-                .sink {
-                    self.currentUser = $0
-                }
-                .store(in: &self.cancellableBag)
-        }
+        model
+            .user
+            .sink {
+                print("SwiftSignIn: usr=\($0)")
+                self.currentUser = $0
+            }
+            .store(in: &self.cancellableBag)
     }
     
     private func restorePreviousUser() async {

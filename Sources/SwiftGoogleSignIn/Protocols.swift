@@ -29,5 +29,5 @@ public protocol SignInObservable {
 // MARK: - Model's protocols
 
 public protocol UserObservable: AnyObject {
-    var user: GoogleUser? { get }
+    var user: CurrentValueSubject<GoogleUser?, Never> { get }
 }
