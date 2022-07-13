@@ -11,46 +11,55 @@ import Combine
 import SwiftUI
 
 public class SignInModel: UserObservable, ObservableObject {
-    private let userKey = GoogleUser.keyName
+    private let userProfileKey = UserProfile.keyName
+    private let userSessionKey = RemoteUserSession.keyName
 
     public init() {}
     
-    @Published public var user: GoogleUser?
+    @Published public var userProfile: UserProfile?
+    @Published public var remoteUserSession: RemoteUserSession?
 
     public func deleteLocalUserAccount() {
-        _currentUser = nil
+        _currentUserProfile = nil
     }
 
-    private var _currentUser: GoogleUser? {
+    private var _currentUserProfile: UserProfile? {
         didSet {
-            if _currentUser == nil {
-                LocalStorage.removeObject(key: userKey)
+            if _currentUserProfile == nil {
+                LocalStorage.removeObject(key: userProfileKey)
             }
-            if oldValue != _currentUser {
-                user = _currentUser
+            if oldValue != _currentUserProfile {
+                userProfile = _currentUserProfile
             }
         }
     }
     
-    var currentUser: GoogleUser? {
-        if _currentUser == nil {
+    private var _currentRemoteUserSession: RemoteUserSession?
+    
+    var currentUser: UserProfile? {
+        if _currentUserProfile == nil {
             if let currentGoogleUser = GIDSignIn.sharedInstance.currentUser {
-                _currentUser = GoogleUser(currentGoogleUser)
+                _currentUserProfile = UserProfile(currentGoogleUser)
+                _currentRemoteUserSession = RemoteUserSession(currentGoogleUser)
             } else {
-                _currentUser = LocalStorage.restoreObject(key: userKey)
+                _currentUserProfile = LocalStorage.restoreObject(key: userProfileKey)
+                _currentRemoteUserSession = LocalStorage.restoreObject(key: userSessionKey)
             }
         }
-        return _currentUser
+        return _currentUserProfile
     }
 
     func createUserAccount(for user: GIDGoogleUser) throws {
         do {
-            let newUser = GoogleUser(user)
+            let newUser = UserProfile(user)
+            let newUserSession = RemoteUserSession(user)
             if newUser == nil {
                 throw SignInError.failedUserData
             }
-            try LocalStorage.saveObject(_currentUser, key: userKey)
-            _currentUser = newUser
+            try LocalStorage.saveObject(newUser, key: userProfileKey)
+            try LocalStorage.saveObject(newUserSession, key: userSessionKey)
+            _currentUserProfile = newUser
+            _currentRemoteUserSession = newUserSession
         } catch SwiftError.message(let error) {
             fatalError("\(error): Unexpected exception")
         } catch {

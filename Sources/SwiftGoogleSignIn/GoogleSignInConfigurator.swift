@@ -2,7 +2,7 @@
 //  GoogleSignInConfigurator.swift
 //  SwiftGoogleSignIn
 //
-//  Created by Serhii Krotkykh
+//  Created by Serhii Krotkih on 6/14/22.
 //
 
 import Foundation

@@ -2,7 +2,7 @@
 //  Interactor.swift
 //  SwiftGoogleSignIn
 //
-//  Created by Serhii Krotkykh
+//  Created by Serhii Krotkih on 6/14/22.
 //
 
 import Foundation
@@ -10,11 +10,13 @@ import GoogleSignIn
 import GoogleSignInSwift
 import Combine
 
-class Interactor: NSObject, SignInInteractable, ObservableObject {
+class SignInInteractor: NSObject, SignInInteractable, ObservableObject {
     // SignInObservable protocol
     let loginResult = PassthroughSubject<Bool, SwiftError>()
     let logoutResult = PassthroughSubject<Bool, Never>()
-    var user: Published<GoogleUser?>.Publisher { $currentUser }
+    
+    var userProfile: Published<UserProfile?>.Publisher { $currentUserProfile }
+    var userSession: Published<RemoteUserSession?>.Publisher { $remoteUserSession }
     
     // lifecycle
     init(configurator: SignInConfigurator,
@@ -27,20 +29,21 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
         self.configure()
     }
     
-    var presenter: UIViewController?
+    var presentingViewController: UIViewController?
     
     // Private, Internal variable
     private var configurator: SignInConfigurator
     private var model: SignInModel
     private var scopePermissions: [String]?
     
-    @Published private var currentUser: GoogleUser?
+    @Published private var currentUserProfile: UserProfile?
+    @Published private var remoteUserSession: RemoteUserSession?
     
     private var cancellableBag = Set<AnyCancellable>()
     
     private func configure() {
         Task {
-            await restorePreviousUser()
+            await restorePreviousSignIn()
             suscribeOnUser()
         }
     }
@@ -48,21 +51,29 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
     private func suscribeOnUser() {
         if #available(iOS 14, *) {
             model
-                .$user
-                .assign(to: &self.$currentUser)
+                .$userProfile
+                .assign(to: &self.$currentUserProfile)
+            model
+                .$remoteUserSession
+                .assign(to: &self.$remoteUserSession)
         } else {
-            model.$user
+            model.$userProfile
                 .sink {
-                    self.currentUser = $0
+                    self.currentUserProfile = $0
+                }
+                .store(in: &self.cancellableBag)
+            model.$remoteUserSession
+                .sink {
+                    self.remoteUserSession = $0
                 }
                 .store(in: &self.cancellableBag)
         }
     }
     
-    private func restorePreviousUser() async {
+    private func restorePreviousSignIn() async {
         do {
             if model.currentUser == nil {
-                let previousUser = await asyncRestorePreviousUser()
+                let previousUser = await asyncRestorePreviousSignIn()
                 try model.createUserAccount(for: previousUser)
             }
         } catch SignInError.failedUserData {
@@ -72,7 +83,7 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
         }
     }
     
-    private func asyncRestorePreviousUser() async -> GIDGoogleUser {
+    private func asyncRestorePreviousSignIn() async -> GIDGoogleUser {
         return await withCheckedContinuation { continuation in
             // source here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
             GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
@@ -85,13 +96,13 @@ class Interactor: NSObject, SignInInteractable, ObservableObject {
 
 // MARK: - SignInLaunched protocol implementstion
 
-extension Interactor {
+extension SignInInteractor {
     // Retrieving user information
     func signIn() {
-        guard let presenter = presenter else { return }
+        guard let viewController = presentingViewController else { return }
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
         GIDSignIn.sharedInstance.signIn(with: configurator.signInConfig,
-                                        presenting: presenter) { [weak self] user, error in
+                                        presenting: viewController) { [weak self] user, error in
             guard let `self` = self else { return }
             self.handleSignInResult(user, error)
         }
@@ -129,7 +140,7 @@ extension Interactor {
 
 // MARK: - Google Sign In Handler
 
-extension Interactor {
+extension SignInInteractor {
     private func handleSignInResult(_ user: GIDGoogleUser?, _ error: Error?) {
         do {
             try self.parseSignInResult(user, error)
@@ -173,7 +184,7 @@ extension Interactor {
 
 // MARK: - Check/Add the Scopes
 
-extension Interactor {
+extension SignInInteractor {
     private func checkPermissions(for user: GIDGoogleUser) -> Bool {
         guard let grantedScopes = user.grantedScopes else { return false }
         guard let scopePermissions = scopePermissions else { return true }
@@ -183,7 +194,7 @@ extension Interactor {
     }
     
     func addPermissions() {
-        guard let presenter = presenter else { return }
+        guard let presenter = presentingViewController else { return }
         guard let scopePermissions = scopePermissions else { return}
         // Your app should be verified already, so it does not make sense. I think so.
         GIDSignIn.sharedInstance.addScopes(scopePermissions,

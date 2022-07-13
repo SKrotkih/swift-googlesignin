@@ -1,7 +1,8 @@
 //
 //  SignInButton.swift
-//  
-//  Created by Serhii Krotkykh on 6/27/22.
+//  SwiftGoogleSignIn
+//
+//  Created by Serhii Krotkih on 6/14/22.
 //
 
 import SwiftUI

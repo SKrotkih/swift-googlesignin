@@ -58,7 +58,7 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
    SwiftGoogleSignIn.session.user?
       .receive(on: RunLoop.main)
       .sink { in
-         // $0 is a GoogleUser data
+         // $0 is a UserProfile data
       }
       .store(in: &self.cancellableBag)
       

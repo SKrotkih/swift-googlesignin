@@ -1,8 +1,8 @@
 //
 //  Protocols.swift
-//  LiveEvents
+//  SwiftGoogleSignIn
 //
-//  Created by Serhii Krotkykh on 10/31/20.
+//  Created by Serhii Krotkih on 6/14/22.
 //
 
 import Foundation
@@ -21,7 +21,8 @@ public protocol SignInLaunched {
 }
 
 public protocol SignInObservable {
-    var user: Published<GoogleUser?>.Publisher { get }
+    var userProfile: Published<UserProfile?>.Publisher { get }
+    var userSession: Published<RemoteUserSession?>.Publisher { get }
     var loginResult: PassthroughSubject<Bool, SwiftError> { get }
     var logoutResult: PassthroughSubject<Bool, Never> { get }
 }
@@ -29,5 +30,5 @@ public protocol SignInObservable {
 // MARK: - Model's protocols
 
 public protocol UserObservable: AnyObject {
-    var user: GoogleUser? { get }
+    var userProfile: UserProfile? { get }
 }
