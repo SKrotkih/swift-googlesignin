@@ -32,4 +32,12 @@ struct LocalStorage {
     static func removeObject(key: String) {
         UserDefaults.standard.removeObject(forKey: key)
     }
+    
+    static func getPlist(_ name: String) -> NSDictionary? {
+        if let path = Bundle.main.path(forResource: name, ofType: "plist") {
+            return NSDictionary(contentsOfFile: path) as NSDictionary?
+        } else {
+            return nil
+        }
+    }
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 import GoogleSignInSwift
 
-/// SwiftUI content view for the Google Sign In
+/// SwiftUI content view for the Google Sign In button
 public struct SignInButton: View {
     public init() { }
     

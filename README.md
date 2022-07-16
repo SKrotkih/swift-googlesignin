@@ -1,8 +1,8 @@
 # SwiftGoogleSignIn
 
-SwiftGoogleSignIn is an open-source package which helps to make log in to Google account for your iOS app easy.
+SwiftGoogleSignIn is an open-source package which helps to make log in to Google appkication.
 In fact the package is an adapter for [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start).
-[There is an example of using the package.](https://github.com/SKrotkih/YTLiveStreaming)
+[Here](https://github.com/SKrotkih/YTLiveStreaming) you can find an example of using the package.
 
 ## How to install it:
 
@@ -53,7 +53,7 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
       }
    }
 
-- when the user signed in successfully then you can handle it:
+- subscribe on the User sign in result action:
 
    SwiftGoogleSignIn.session.user?
       .receive(on: RunLoop.main)
@@ -62,7 +62,7 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
       }
       .store(in: &self.cancellableBag)
       
-- or handle if something went wrong:
+- subscribe on the User sign in result action (if something went wrong):
 
    SwiftGoogleSignIn.session.loginResult?
       .sink(receiveCompletion: { completion in
@@ -79,7 +79,4 @@ In fact the package is an adapter for [Google Sign-In for iOS and macOS](https:/
          })
          .store(in: &cancellableBag)
 
-
-
-
- Note: [There is an example of using the package.](https://github.com/SKrotkih/YTLiveStreaming)
+ Note: [Here](https://github.com/SKrotkih/YTLiveStreaming) you can find an example of using the package.

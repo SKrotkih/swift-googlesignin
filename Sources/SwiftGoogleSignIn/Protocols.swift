@@ -29,6 +29,10 @@ public protocol SignInObservable {
 
 // MARK: - Model's protocols
 
-public protocol UserObservable: AnyObject {
+public protocol UserProfileObservable: AnyObject {
     var userProfile: UserProfile? { get }
+}
+
+public protocol UserRemoteSessionObservable: AnyObject {
+    var remoteUserSession: RemoteUserSession? { get }
 }

@@ -8,6 +8,7 @@
 import Foundation
 import GoogleSignIn
 
+// Google API parameters store
 public struct RemoteUserSession: Codable, Equatable {
     public let userId: String
     public let idToken: String

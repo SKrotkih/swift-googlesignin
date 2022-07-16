@@ -34,17 +34,17 @@ public struct UserProfile: Codable, Equatable {
     }
 }
 
-func ==(lUser: UserProfile?, rUser: UserProfile?) -> Bool {
-    var isNotEqual = false
+public func ==(lUser: UserProfile?, rUser: UserProfile?) -> Bool {
+    var notEqual = false
     switch (lUser, rUser) {
     case (nil, nil):
         break
     case (nil, _), (_, nil):
-        isNotEqual = true
+        notEqual = true
     default:
         if lUser?.userId != rUser?.userId {
-            isNotEqual = true
+            notEqual = true
         }
     }
-    return !isNotEqual
+    return !notEqual
 }

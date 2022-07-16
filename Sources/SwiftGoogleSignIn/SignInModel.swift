@@ -10,7 +10,7 @@ import GoogleSignIn
 import Combine
 import SwiftUI
 
-public class SignInModel: UserObservable, ObservableObject {
+public class SignInModel: UserProfileObservable, UserRemoteSessionObservable, ObservableObject {
     private let userProfileKey = UserProfile.keyName
     private let userSessionKey = RemoteUserSession.keyName
 
@@ -49,7 +49,7 @@ public class SignInModel: UserObservable, ObservableObject {
         return _currentUserProfile
     }
 
-    func createUserAccount(for user: GIDGoogleUser) throws {
+    func createUserProfileAndRemoteUserSession(for user: GIDGoogleUser) throws {
         do {
             let newUser = UserProfile(user)
             let newUserSession = RemoteUserSession(user)

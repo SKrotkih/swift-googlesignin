@@ -10,7 +10,7 @@ import GoogleSignIn
 import GoogleSignInSwift
 import Combine
 
-class SignInInteractor: NSObject, SignInInteractable, ObservableObject {
+class SignInInteractor: NSObject, ObservableObject {
     // SignInObservable protocol
     let loginResult = PassthroughSubject<Bool, SwiftError>()
     let logoutResult = PassthroughSubject<Bool, Never>()
@@ -74,7 +74,7 @@ class SignInInteractor: NSObject, SignInInteractable, ObservableObject {
         do {
             if model.currentUser == nil {
                 let previousUser = await asyncRestorePreviousSignIn()
-                try model.createUserAccount(for: previousUser)
+                try model.createUserProfileAndRemoteUserSession(for: previousUser)
             }
         } catch SignInError.failedUserData {
             fatalError("Unexpected exception")
@@ -96,8 +96,8 @@ class SignInInteractor: NSObject, SignInInteractable, ObservableObject {
 
 // MARK: - SignInLaunched protocol implementstion
 
-extension SignInInteractor {
-    // Retrieving user information
+extension SignInInteractor: SignInInteractable {
+    // Retrieving user information. The Client can use SignInButton too.
     func signIn() {
         guard let viewController = presentingViewController else { return }
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
@@ -132,7 +132,6 @@ extension SignInInteractor {
         if GIDSignIn.sharedInstance.handle(url) {
             return true
         } else {
-            // Handle other custom URL types.
             return false
         }
     }
@@ -169,7 +168,7 @@ extension SignInInteractor {
             throw SignInError.userIsUndefined
         } else if let user = user, checkPermissions(for: user) {
             do {
-                try model.createUserAccount(for: user)
+                try model.createUserProfileAndRemoteUserSession(for: user)
             } catch SignInError.failedUserData {
                 throw SignInError.failedUserData
             } catch {
