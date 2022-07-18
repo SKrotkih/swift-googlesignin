@@ -1,6 +1,6 @@
 //
-//  RemoteUserSession.swift
-//  SwiftGoogleSignIn
+//  UserAuthentification.swift
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
@@ -9,7 +9,7 @@ import Foundation
 import GoogleSignIn
 
 // Google API parameters store
-public struct RemoteUserSession: Codable, Equatable {
+public struct UserAuthentification: Codable, Equatable {
     public let userId: String
     public let idToken: String
     public let accessToken: String?
@@ -24,13 +24,9 @@ public struct RemoteUserSession: Codable, Equatable {
             return nil
         }
     }
-
-    static var keyName: String {
-        return String(describing: self)
-    }
 }
 
-func ==(lUser: RemoteUserSession?, rUser: RemoteUserSession?) -> Bool {
+func ==(lUser: UserAuthentification?, rUser: UserAuthentification?) -> Bool {
     var isNotEqual = false
     switch (lUser, rUser) {
     case (nil, nil):

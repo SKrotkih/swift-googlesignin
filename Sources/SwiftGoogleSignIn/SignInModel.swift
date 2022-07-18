@@ -1,6 +1,6 @@
 //
-//  SignInModel.swift
-//  SwiftGoogleSignIn
+//  UserSessionStore.swift
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
@@ -8,58 +8,67 @@
 import Foundation
 import GoogleSignIn
 import Combine
-import SwiftUI
 
-public class SignInModel: UserProfileObservable, UserRemoteSessionObservable, ObservableObject {
-    private let userProfileKey = UserProfile.keyName
-    private let userSessionKey = RemoteUserSession.keyName
+class UserSessionStore: UserSessionObservable, ObservableObject {
+    private let userSessionKey = UserSession.keyName
 
-    public init() {}
-    
-    @Published public var userProfile: UserProfile?
-    @Published public var remoteUserSession: RemoteUserSession?
+    @Published var userSession: UserSession?
 
-    public func deleteLocalUserAccount() {
-        _currentUserProfile = nil
+    func closeCurrentUserSession() {
+        _currentUserSession = nil
     }
-
-    private var _currentUserProfile: UserProfile? {
-        didSet {
-            if _currentUserProfile == nil {
-                LocalStorage.removeObject(key: userProfileKey)
-            }
-            if oldValue != _currentUserProfile {
-                userProfile = _currentUserProfile
-            }
+    
+    var currentUserSession: UserSession? {
+        if _currentUserSession == nil {
+            _currentUserSession = LocalStorage.restoreObject(key: userSessionKey)
         }
-    }
-    
-    private var _currentRemoteUserSession: RemoteUserSession?
-    
-    var currentUser: UserProfile? {
-        if _currentUserProfile == nil {
-            if let currentGoogleUser = GIDSignIn.sharedInstance.currentUser {
-                _currentUserProfile = UserProfile(currentGoogleUser)
-                _currentRemoteUserSession = RemoteUserSession(currentGoogleUser)
-            } else {
-                _currentUserProfile = LocalStorage.restoreObject(key: userProfileKey)
-                _currentRemoteUserSession = LocalStorage.restoreObject(key: userSessionKey)
-            }
-        }
-        return _currentUserProfile
+        return _currentUserSession
     }
 
-    func createUserProfileAndRemoteUserSession(for user: GIDGoogleUser) throws {
+    func restorePreviousSession() async {
         do {
-            let newUser = UserProfile(user)
-            let newUserSession = RemoteUserSession(user)
-            if newUser == nil {
+            if currentUserSession == nil {
+                let previousUser = await asyncRestorePreviousSession()
+                try createUserSession(for: previousUser)
+            }
+        } catch SignInError.failedUserData {
+            fatalError("Unexpected exception")
+        } catch {
+            fatalError("Unexpected exception")
+        }
+    }
+
+    private var _currentUserSession: UserSession? {
+        didSet {
+            if _currentUserSession == nil {
+                LocalStorage.removeObject(key: userSessionKey)
+            }
+            if oldValue != _currentUserSession {
+                userSession = _currentUserSession
+            }
+        }
+    }
+
+    private func asyncRestorePreviousSession() async -> GIDGoogleUser {
+        return await withCheckedContinuation { continuation in
+            // source here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
+            GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
+                guard let user = user else { return }
+                continuation.resume(with: .success(user))
+            }
+        }
+    }
+
+    func createUserSession(for user: GIDGoogleUser) throws {
+        do {
+            let profile = UserProfile(user)
+            let remoteSession = UserAuthentification(user)
+            if profile == nil || remoteSession == nil {
                 throw SignInError.failedUserData
             }
-            try LocalStorage.saveObject(newUser, key: userProfileKey)
-            try LocalStorage.saveObject(newUserSession, key: userSessionKey)
-            _currentUserProfile = newUser
-            _currentRemoteUserSession = newUserSession
+            let userSession = UserSession(profile: profile!, remoteSession: remoteSession!)
+            try LocalStorage.saveObject(userSession, key: userSessionKey)
+            _currentUserSession = userSession
         } catch SwiftError.message(let error) {
             fatalError("\(error): Unexpected exception")
         } catch {

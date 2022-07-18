@@ -1,6 +1,6 @@
 //
 //  Protocols.swift
-//  SwiftGoogleSignIn
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
@@ -21,18 +21,13 @@ public protocol SignInLaunched {
 }
 
 public protocol SignInObservable {
-    var userProfile: Published<UserProfile?>.Publisher { get }
-    var userSession: Published<RemoteUserSession?>.Publisher { get }
+    var userSession: Published<UserSession?>.Publisher { get }
     var loginResult: PassthroughSubject<Bool, SwiftError> { get }
     var logoutResult: PassthroughSubject<Bool, Never> { get }
 }
 
 // MARK: - Model's protocols
 
-public protocol UserProfileObservable: AnyObject {
-    var userProfile: UserProfile? { get }
-}
-
-public protocol UserRemoteSessionObservable: AnyObject {
-    var remoteUserSession: RemoteUserSession? { get }
+public protocol UserSessionObservable: AnyObject {
+    var userSession: UserSession? { get }
 }

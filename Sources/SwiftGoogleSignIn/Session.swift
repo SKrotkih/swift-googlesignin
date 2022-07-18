@@ -1,6 +1,6 @@
 //
 //  Session.swift
-//  SwiftGoogleSignIn
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
@@ -12,11 +12,11 @@ public let session = Session()
 
 public class Session {
     private var interactor: SignInInteractor?
-    private var model: SignInModel?
+    private var model: UserSessionStore?
     private var configurator: GoogleSignInConfigurator?
     
     public func initialize(_ scopePermissions: [String]?) {
-        model = SignInModel()
+        model = UserSessionStore()
         configurator = GoogleSignInConfigurator()
         interactor = SignInInteractor(configurator: configurator!,
                                 model: model!,
@@ -62,22 +62,22 @@ public class Session {
     }
     
     // The Client can subscribe on change of user profile as result of log in or log out
-    public var userProfile: Published<UserProfile?>.Publisher? {
-        return interactor?.userProfile
+    public var userSession: Published<UserSession?>.Publisher? {
+        return interactor?.userSession
     }
 
     // The Client uses it as Google API token
     public var oauthAccessToken: String? {
-        return model?.remoteUserSession?.accessToken
+        return model?.userSession?.remoteSession.accessToken
     }
     
     // Current user profile parameters: user's full name
     public var userFullName: String? {
-        return model?.userProfile?.fullName
+        return model?.userSession?.profile.fullName
     }
     
     // Current user profile parameters: user's avatar url
     public var userProfilePictureUrl: URL? {
-        return model?.userProfile?.profilePicUrl
+        return model?.userSession?.profile.profilePicUrl
     }
 }

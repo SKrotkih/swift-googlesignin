@@ -1,6 +1,6 @@
 //
 //  UserProfile.swift
-//  SwiftGoogleSignIn
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
@@ -27,10 +27,6 @@ public struct UserProfile: Codable, Equatable {
         } else {
             return nil
         }
-    }
-
-    static var keyName: String {
-        return String(describing: self)
     }
 }
 

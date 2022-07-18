@@ -1,6 +1,6 @@
 //
 //  Interactor.swift
-//  SwiftGoogleSignIn
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
@@ -15,12 +15,11 @@ class SignInInteractor: NSObject, ObservableObject {
     let loginResult = PassthroughSubject<Bool, SwiftError>()
     let logoutResult = PassthroughSubject<Bool, Never>()
     
-    var userProfile: Published<UserProfile?>.Publisher { $currentUserProfile }
-    var userSession: Published<RemoteUserSession?>.Publisher { $remoteUserSession }
+    var userSession: Published<UserSession?>.Publisher { $currentUserSession }
     
     // lifecycle
     init(configurator: SignInConfigurator,
-         model: SignInModel,
+         model: UserSessionStore,
          scopePermissions: [String]?) {
         self.configurator = configurator
         self.model = model
@@ -33,17 +32,16 @@ class SignInInteractor: NSObject, ObservableObject {
     
     // Private, Internal variable
     private var configurator: SignInConfigurator
-    private var model: SignInModel
+    private var model: UserSessionStore
     private var scopePermissions: [String]?
     
-    @Published private var currentUserProfile: UserProfile?
-    @Published private var remoteUserSession: RemoteUserSession?
+    @Published private var currentUserSession: UserSession?
     
     private var cancellableBag = Set<AnyCancellable>()
     
     private func configure() {
         Task {
-            await restorePreviousSignIn()
+            await model.restorePreviousSession()
             suscribeOnUser()
         }
     }
@@ -51,45 +49,14 @@ class SignInInteractor: NSObject, ObservableObject {
     private func suscribeOnUser() {
         if #available(iOS 14, *) {
             model
-                .$userProfile
-                .assign(to: &self.$currentUserProfile)
-            model
-                .$remoteUserSession
-                .assign(to: &self.$remoteUserSession)
+                .$userSession
+                .assign(to: &self.$currentUserSession)
         } else {
-            model.$userProfile
+            model.$userSession
                 .sink {
-                    self.currentUserProfile = $0
+                    self.currentUserSession = $0
                 }
                 .store(in: &self.cancellableBag)
-            model.$remoteUserSession
-                .sink {
-                    self.remoteUserSession = $0
-                }
-                .store(in: &self.cancellableBag)
-        }
-    }
-    
-    private func restorePreviousSignIn() async {
-        do {
-            if model.currentUser == nil {
-                let previousUser = await asyncRestorePreviousSignIn()
-                try model.createUserProfileAndRemoteUserSession(for: previousUser)
-            }
-        } catch SignInError.failedUserData {
-            fatalError("Unexpected exception")
-        } catch {
-            fatalError("Unexpected exception")
-        }
-    }
-    
-    private func asyncRestorePreviousSignIn() async -> GIDGoogleUser {
-        return await withCheckedContinuation { continuation in
-            // source here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
-            GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
-                guard let user = user else { return }
-                continuation.resume(with: .success(user))
-            }
         }
     }
 }
@@ -110,7 +77,7 @@ extension SignInInteractor: SignInInteractable {
     
     func logOut() {
         GIDSignIn.sharedInstance.signOut()
-        model.deleteLocalUserAccount()
+        model.closeCurrentUserSession()
         logoutResult.send(true)
     }
     
@@ -168,7 +135,7 @@ extension SignInInteractor {
             throw SignInError.userIsUndefined
         } else if let user = user, checkPermissions(for: user) {
             do {
-                try model.createUserProfileAndRemoteUserSession(for: user)
+                try model.createUserSession(for: user)
             } catch SignInError.failedUserData {
                 throw SignInError.failedUserData
             } catch {

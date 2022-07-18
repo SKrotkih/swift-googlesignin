@@ -1,6 +1,6 @@
 //
 //  GoogleSignInConfigurator.swift
-//  SwiftGoogleSignIn
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
 //
