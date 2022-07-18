@@ -8,40 +8,53 @@
 import UIKit
 import Combine
 
-public let session = Session()
+public let session = GoogleSignInSession()
 
-public class Session {
-    private var interactor: SignInInteractor?
+// The Package Public Interface
+public class GoogleSignInSession {
+    private var interactor: GoogleInteractor?
     private var model: UserSessionStore?
-    private var configurator: GoogleSignInConfigurator?
+    private var configurator: GoogleConfigurator?
     
     public func initialize(_ scopePermissions: [String]?) {
         model = UserSessionStore()
-        configurator = GoogleSignInConfigurator()
-        interactor = SignInInteractor(configurator: configurator!,
+        configurator = GoogleConfigurator()
+        interactor = GoogleInteractor(configurator: configurator!,
                                 model: model!,
                                 scopePermissions: scopePermissions)
     }
     
+    // The Client has to handle openUrl
     public func openUrl(_ url: URL) -> Bool {
         return interactor?.openUrl(url) ?? false
     }
      
+    // The Client has to set up UIViewController for Goggle SignIn UI base view
     public var presentingViewController: UIViewController? {
         didSet {
             interactor?.presentingViewController = presentingViewController
         }
     }
 
-    // The Client can use SignInButton too
+    // The Client can use SignInButton too.
     public func logIn() {
         interactor?.signIn()
     }
     
+    // The Client can subscribe on log in result
+    public var loginResult: PassthroughSubject<Bool, SwiftError>? {
+        return interactor?.loginResult
+    }
+
     public func logOut() {
         interactor?.logOut()
     }
-    
+
+    // The Client can subscribe on log out result
+    public var logoutResult: PassthroughSubject<Bool, Never>? {
+        return interactor?.logoutResult
+    }
+
     // As optional we can send request with scopes
     public func requestPermissions() {
         interactor?.addPermissions()
@@ -51,33 +64,8 @@ public class Session {
         interactor?.disconnect()
     }
     
-    // The Client can subscribe on log out result
-    public var logoutResult: PassthroughSubject<Bool, Never>? {
-        return interactor?.logoutResult
-    }
-    
-    // The Client can subscribe on log in result
-    public var loginResult: PassthroughSubject<Bool, SwiftError>? {
-        return interactor?.loginResult
-    }
-    
-    // The Client can subscribe on change of user profile as result of log in or log out
+    // The Client can subscribe on UserSession to have access to user profile and Google API tokens
     public var userSession: Published<UserSession?>.Publisher? {
         return interactor?.userSession
-    }
-
-    // The Client uses it as Google API token
-    public var oauthAccessToken: String? {
-        return model?.userSession?.remoteSession.accessToken
-    }
-    
-    // Current user profile parameters: user's full name
-    public var userFullName: String? {
-        return model?.userSession?.profile.fullName
-    }
-    
-    // Current user profile parameters: user's avatar url
-    public var userProfilePictureUrl: URL? {
-        return model?.userSession?.profile.profilePicUrl
     }
 }

@@ -1,5 +1,5 @@
 //
-//  Interactor.swift
+//  GoogleInteractor.swift
 //  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
@@ -10,7 +10,7 @@ import GoogleSignIn
 import GoogleSignInSwift
 import Combine
 
-class SignInInteractor: NSObject, ObservableObject {
+class GoogleInteractor: NSObject, ObservableObject {
     // SignInObservable protocol
     let loginResult = PassthroughSubject<Bool, SwiftError>()
     let logoutResult = PassthroughSubject<Bool, Never>()
@@ -63,7 +63,7 @@ class SignInInteractor: NSObject, ObservableObject {
 
 // MARK: - SignInLaunched protocol implementstion
 
-extension SignInInteractor: SignInInteractable {
+extension GoogleInteractor: SignInInteractable {
     // Retrieving user information. The Client can use SignInButton too.
     func signIn() {
         guard let viewController = presentingViewController else { return }
@@ -106,7 +106,7 @@ extension SignInInteractor: SignInInteractable {
 
 // MARK: - Google Sign In Handler
 
-extension SignInInteractor {
+extension GoogleInteractor {
     private func handleSignInResult(_ user: GIDGoogleUser?, _ error: Error?) {
         do {
             try self.parseSignInResult(user, error)
@@ -150,7 +150,7 @@ extension SignInInteractor {
 
 // MARK: - Check/Add the Scopes
 
-extension SignInInteractor {
+extension GoogleInteractor {
     private func checkPermissions(for user: GIDGoogleUser) -> Bool {
         guard let grantedScopes = user.grantedScopes else { return false }
         guard let scopePermissions = scopePermissions else { return true }

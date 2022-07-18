@@ -1,5 +1,5 @@
 //
-//  GoogleSignInConfigurator.swift
+//  GoogleConfigurator.swift
 //  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
@@ -12,7 +12,7 @@ protocol SignInConfigurator {
     var signInConfig: GIDConfiguration { get }
 }
 
-class GoogleSignInConfigurator: SignInConfigurator {
+class GoogleConfigurator: SignInConfigurator {
 
     public var signInConfig: GIDConfiguration {
         return GIDConfiguration(clientID: clientID)

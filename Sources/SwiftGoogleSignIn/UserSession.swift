@@ -11,10 +11,10 @@ public class UserSession: Codable {
     
     // MARK: - Properties
     public let profile: UserProfile
-    public let remoteSession: UserAuthentification
+    public let remoteSession: UserAuthentication
     
     // MARK: - Methods
-    public init(profile: UserProfile, remoteSession: UserAuthentification) {
+    public init(profile: UserProfile, remoteSession: UserAuthentication) {
         self.profile = profile
         self.remoteSession = remoteSession
     }

@@ -62,7 +62,7 @@ class UserSessionStore: UserSessionObservable, ObservableObject {
     func createUserSession(for user: GIDGoogleUser) throws {
         do {
             let profile = UserProfile(user)
-            let remoteSession = UserAuthentification(user)
+            let remoteSession = UserAuthentication(user)
             if profile == nil || remoteSession == nil {
                 throw SignInError.failedUserData
             }
