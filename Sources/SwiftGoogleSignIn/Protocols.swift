@@ -21,7 +21,7 @@ public protocol SignInLaunched {
 }
 
 public protocol SignInObservable {
-    var userSession: Published<UserSession?>.Publisher { get }
+    var userSessionObservanle: Published<UserSession?>.Publisher { get }
     var loginResult: PassthroughSubject<Bool, SwiftError> { get }
     var logoutResult: PassthroughSubject<Bool, Never> { get }
 }

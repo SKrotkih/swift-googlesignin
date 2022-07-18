@@ -65,7 +65,11 @@ public class GoogleSignInSession {
     }
     
     // The Client can subscribe on UserSession to have access to user profile and Google API tokens
-    public var userSession: Published<UserSession?>.Publisher? {
+    public var userSessionObservanle: Published<UserSession?>.Publisher? {
+        return interactor?.userSessionObservanle
+    }
+    
+    public var userSession: UserSession? {
         return interactor?.userSession
     }
 }

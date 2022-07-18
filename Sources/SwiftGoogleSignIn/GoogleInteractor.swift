@@ -15,7 +15,8 @@ class GoogleInteractor: NSObject, ObservableObject {
     let loginResult = PassthroughSubject<Bool, SwiftError>()
     let logoutResult = PassthroughSubject<Bool, Never>()
     
-    var userSession: Published<UserSession?>.Publisher { $currentUserSession }
+    var userSessionObservanle: Published<UserSession?>.Publisher { $currentUserSession }
+    var userSession: UserSession? { currentUserSession }
     
     // lifecycle
     init(configurator: SignInConfigurator,
