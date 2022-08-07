@@ -1,7 +1,6 @@
-# SwiftGoogleSignIn
+# Swift Google Sign-In Package
 
-SwiftGoogleSignIn is an open-source package which helps to make log in to Google application.
-It uses [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start).
+swift-googlesignin is an open-source package which helps to make log in with [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start).
 [Here](https://github.com/SKrotkih/YTLiveStreaming) you can find an example of using the package.
 
 ## How to install it:
