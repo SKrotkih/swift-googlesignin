@@ -6,11 +6,11 @@ SwiftGoogleSignIn is an open-source package which helps to make log in with [Goo
 ## How to install it:
 
 - open your Xcode project for iOS
-- select File-Add packages...
-- in the Apple Swift Packages screen select 'Search or Enter Package URL'
-- enter https://github.com/SKrotkih/SwiftGoogleSignIn.git
-- make sure SwiftGoogleSignIn is opened
-- press 'Add Package' 
+- select **File**-**Add packages...**
+- in the Apple Swift Packages screen select **Search or Enter Package URL**
+- enter https://github.com/SKrotkih/swift-googlesignin.git
+- make sure **SwiftGoogleSignIn** is opened
+- press **Add Package** 
 - Xcode creates 'Package Pependencies' group with SwiftGoogleSignIn package with last version 
 - open your Xcode project settings - PROJECT section on the Package Dependencies tab
 - make sure the SwiftGoogleSignIn package name is presented there 
