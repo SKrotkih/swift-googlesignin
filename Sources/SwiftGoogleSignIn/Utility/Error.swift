@@ -6,6 +6,17 @@
 
 import Foundation
 
+/**
+ Create Error Message
+ 
+ - Enum Cases:
+    - .message(String) : ordinary message
+    - .systemMessage(Int, String) : message with return code
+    - func message() -> String : get full formatted text message
+ 
+   # Example:
+            throw SwiftError.message("Encode  error")
+ */
 public enum SwiftError: Error {
     case message(String)
     case systemMessage(Int, String)
