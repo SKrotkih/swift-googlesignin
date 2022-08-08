@@ -1,6 +1,6 @@
 # SwiftGoogleSignIn
 
-SwiftGoogleSignIn is an open-source package which helps to make log in with [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start).
+SwiftGoogleSignIn is an open-source package which helps to make log in with [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start) in your app.
 [Here](https://github.com/SKrotkih/LiveEvents) you can find an example of using the package.
 
 ## How to install it:
@@ -19,6 +19,7 @@ SwiftGoogleSignIn is an open-source package which helps to make log in with [Goo
 
 - initialize stage:
 
+```
    import SwiftGoogleSignIn
 
    // There are needed sensitive scopes for Google APIs to have ability to work properly
@@ -38,9 +39,11 @@ SwiftGoogleSignIn is an open-source package which helps to make log in with [Goo
    ) -> Bool {
        return SwiftGoogleSignIn.session.openUrl(url)
    }
-   
+```
+ 
 - put 'Sign In' button:
 
+```
    import SwiftGoogleSignIn
 
    struct SignInBodyView: View {
@@ -51,18 +54,18 @@ SwiftGoogleSignIn is an open-source package which helps to make log in with [Goo
          ...
       }
    }
-
+```
 - subscribe on the User sign in result action:
-
+```
    SwiftGoogleSignIn.session.user?
       .receive(on: RunLoop.main)
       .sink { in
          // $0 is a UserProfile data
       }
       .store(in: &self.cancellableBag)
-      
+```      
 - subscribe on the User sign in result action (if something went wrong):
-
+```
    SwiftGoogleSignIn.session.loginResult?
       .sink(receiveCompletion: { completion in
          switch completion {
@@ -77,5 +80,5 @@ SwiftGoogleSignIn is an open-source package which helps to make log in with [Goo
             }
          })
          .store(in: &cancellableBag)
-
+```
  Note: [Here](https://github.com/SKrotkih/LiveEvents) you can find an example of using the package.
