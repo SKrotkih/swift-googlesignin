@@ -78,20 +78,16 @@ extension GoogleInteractor: SignInInteractable {
     
     func logOut() {
         GIDSignIn.sharedInstance.signOut()
-        model.closeCurrentUserSession()
-        logoutResult.send(true)
-    }
-    
-    // It is highly recommended that you provide users that signed in with Google the
-    // ability to disconnect their Google account from your app. If the user deletes their account,
-    // you must delete the information that your app obtained from the Google APIs.
-    func disconnect() {
+        // It is highly recommended that you provide users that signed in with Google the
+        // ability to disconnect their Google account from your app. If the user deletes their account,
+        // you must delete the information that your app obtained from the Google APIs.
         GIDSignIn.sharedInstance.disconnect { error in
             guard error == nil else { return }
             // Google Account disconnected from your app.
             // Perform clean-up actions, such as deleting data associated with the
             //   disconnected account.
-            self.logOut()
+            self.model.closeCurrentUserSession()
+            self.logoutResult.send(true)
         }
     }
 

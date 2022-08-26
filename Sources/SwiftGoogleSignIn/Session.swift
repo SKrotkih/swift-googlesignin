@@ -60,10 +60,6 @@ public class GoogleSignInSession {
         interactor?.addPermissions()
     }
     
-    public func disconnect() {
-        interactor?.disconnect()
-    }
-    
     // The Client can subscribe on UserSession to have access to user profile and Google API tokens
     public var userSessionObservanle: Published<UserSession?>.Publisher? {
         return interactor?.userSessionObservanle

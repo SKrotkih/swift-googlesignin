@@ -16,7 +16,6 @@ public typealias SignInInteractable = SignInLaunched & SignInObservable
 public protocol SignInLaunched {
     func signIn()
     func logOut()
-    func disconnect()
     func addPermissions()
 }
 
