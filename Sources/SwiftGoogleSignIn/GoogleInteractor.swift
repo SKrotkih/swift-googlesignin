@@ -15,15 +15,15 @@ class GoogleInteractor: NSObject, ObservableObject {
     let loginResult = PassthroughSubject<Bool, SwiftError>()
     let logoutResult = PassthroughSubject<Bool, Never>()
     
-    var userSessionObservanle: Published<UserSession?>.Publisher { $currentUserSession }
+    var userSessionObservable: Published<UserSession?>.Publisher { $currentUserSession }
     var userSession: UserSession? { currentUserSession }
     
     // lifecycle
     init(configurator: SignInConfigurator,
-         model: UserSessionStore,
+         sessionStarage: SessionStorage,
          scopePermissions: [String]?) {
         self.configurator = configurator
-        self.model = model
+        self.sessionStarage = sessionStarage
         self.scopePermissions = scopePermissions
         super.init()
         self.configure()
@@ -33,7 +33,7 @@ class GoogleInteractor: NSObject, ObservableObject {
     
     // Private, Internal variable
     private var configurator: SignInConfigurator
-    private var model: UserSessionStore
+    private var sessionStarage: SessionStorage
     private var scopePermissions: [String]?
     
     @Published private var currentUserSession: UserSession?
@@ -42,24 +42,25 @@ class GoogleInteractor: NSObject, ObservableObject {
     
     private func configure() {
         Task {
-            await model.restorePreviousSession()
+            await sessionStarage.restorePreviousSession()
             suscribeOnUser()
         }
     }
     
     private func suscribeOnUser() {
-        if #available(iOS 14, *) {
-            model
+//        if #available(iOS 14, *) {
+//            sessionStarage
+//                .$userSession
+//                .assign(to: &self.$currentUserSession)
+//        } else {
+            sessionStarage
                 .$userSession
-                .assign(to: &self.$currentUserSession)
-        } else {
-            model.$userSession
                 .sink {
                     self.currentUserSession = $0
                 }
                 .store(in: &self.cancellableBag)
         }
-    }
+//    }
 }
 
 // MARK: - SignInLaunched protocol implementstion
@@ -86,7 +87,7 @@ extension GoogleInteractor: SignInInteractable {
             // Google Account disconnected from your app.
             // Perform clean-up actions, such as deleting data associated with the
             //   disconnected account.
-            self.model.closeCurrentUserSession()
+            self.sessionStarage.closeCurrentUserSession()
             self.logoutResult.send(true)
         }
     }
@@ -132,7 +133,7 @@ extension GoogleInteractor {
             throw SignInError.userIsUndefined
         } else if let user = user, checkPermissions(for: user) {
             do {
-                try model.createUserSession(for: user)
+                try sessionStarage.createUserSession(for: user)
             } catch SignInError.failedUserData {
                 throw SignInError.failedUserData
             } catch {

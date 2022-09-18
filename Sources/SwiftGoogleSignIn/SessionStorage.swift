@@ -1,5 +1,5 @@
 //
-//  UserSessionStore.swift
+//  SessionStorage.swift
 //  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
@@ -9,7 +9,7 @@ import Foundation
 import GoogleSignIn
 import Combine
 
-class UserSessionStore: UserSessionObservable, ObservableObject {
+class SessionStorage: UserSessionObservable, ObservableObject {
     private let userSessionKey = UserSession.keyName
 
     @Published var userSession: UserSession?
