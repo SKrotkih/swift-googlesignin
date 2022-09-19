@@ -1,5 +1,5 @@
 //
-//  Session.swift
+//  PackageAPI.swift
 //  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkih on 6/14/22.
@@ -8,10 +8,10 @@
 import UIKit
 import Combine
 
-public let session = GoogleSignInSession()
+public let packageAPI = PackageAPI()
 
 // The Package Public Interface
-public class GoogleSignInSession {
+public class PackageAPI {
     private var interactor: GoogleInteractor?
     private var sessionStarage: SessionStorage?
     private var configurator: GoogleConfigurator?

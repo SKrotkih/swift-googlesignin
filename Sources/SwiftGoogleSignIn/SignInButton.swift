@@ -19,7 +19,7 @@ public struct SignInButton: View {
         GoogleSignInButton(scheme: self.colorSheme == .dark ? .dark : .light,
                            style: .standard,
                            action: {
-            session.logIn()
+            packageAPI.logIn()
         })
     }
 }
