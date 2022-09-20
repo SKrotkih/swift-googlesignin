@@ -42,8 +42,8 @@ class GoogleInteractor: NSObject, ObservableObject {
     
     private func configure() {
         Task {
-            await sessionStarage.restorePreviousSession()
             suscribeOnUser()
+            await sessionStarage.restorePreviousSession()
         }
     }
     
