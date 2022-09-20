@@ -48,11 +48,11 @@ class GoogleInteractor: NSObject, ObservableObject {
     }
     
     private func suscribeOnUser() {
-//        if #available(iOS 14, *) {
-//            sessionStarage
-//                .$userSession
-//                .assign(to: &self.$currentUserSession)
-//        } else {
+        if #available(iOS 14, *) {
+            sessionStarage
+                .$userSession
+                .assign(to: &self.$currentUserSession)
+        } else {
             sessionStarage
                 .$userSession
                 .sink {
@@ -60,7 +60,7 @@ class GoogleInteractor: NSObject, ObservableObject {
                 }
                 .store(in: &self.cancellableBag)
         }
-//    }
+    }
 }
 
 // MARK: - SignInLaunched protocol implementstion
