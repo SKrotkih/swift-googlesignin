@@ -43,9 +43,9 @@ class SessionStorage: UserSessionObservable, ObservableObject {
             if _currentUserSession == nil {
                 LocalStorage.removeObject(key: userSessionKey)
             }
-            if oldValue != _currentUserSession {
+//            if oldValue != _currentUserSession {
                 userSession = _currentUserSession
-            }
+//            }
         }
     }
 

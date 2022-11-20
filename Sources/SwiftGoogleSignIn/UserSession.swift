@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  UserSession.swift
 //  
 //
 //  Created by Sergey Krotkih on 7/18/22.
@@ -26,7 +26,7 @@ public class UserSession: Codable {
 
 extension UserSession: Equatable {
     static public func ==(lhs: UserSession, rhs: UserSession) -> Bool {
-        return lhs.profile == rhs.profile &&
-        lhs.remoteSession == rhs.remoteSession
+        return lhs.profile.userId == rhs.profile.userId &&
+        lhs.remoteSession.accessToken == rhs.remoteSession.accessToken
     }
 }
