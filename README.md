@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow"/>
 </p>
 
-# SwiftGoogleSignIn v1.46
+# SwiftGoogleSignIn v1.47
 
 SwiftGoogleSignIn is an open-source package which uses [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start) and can be used to make sign in your app.
 [Here](https://github.com/SKrotkih/LiveEvents) you can find an example of using this package.
