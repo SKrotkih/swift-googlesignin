@@ -10,60 +10,65 @@ import GoogleSignIn
 import GoogleSignInSwift
 import Combine
 
+// MARK: - SignIn Interactor Protocol
+
+typealias SignInInteractable = SignInLaunchable & SignInObservable
+
+protocol SignInLaunchable {
+    func signIn()
+    func signOut()
+    func addPermissions()
+}
+
+protocol SignInObservable {
+    var userSessionObservable: Published<UserSession?>.Publisher { get }
+    var loginResult: PassthroughSubject<Bool, SwiftError> { get }
+    var logoutResult: PassthroughSubject<Bool, Never> { get }
+}
+
+// MARK: - SignIn Interactor
+
 class GoogleInteractor: NSObject, ObservableObject {
-    // SignInObservable protocol
     let loginResult = PassthroughSubject<Bool, SwiftError>()
     let logoutResult = PassthroughSubject<Bool, Never>()
     
+    @Published private var currentUserSession: UserSession?
+
     var userSessionObservable: Published<UserSession?>.Publisher { $currentUserSession }
     var userSession: UserSession? { currentUserSession }
-    
-    // lifecycle
-    init(configurator: SignInConfigurator,
-         sessionStarage: SessionStorage,
-         scopePermissions: [String]?) {
-        self.configurator = configurator
-        self.sessionStarage = sessionStarage
-        self.scopePermissions = scopePermissions
-        super.init()
-        self.configure()
-    }
     
     var presentingViewController: UIViewController?
     
     // Private, Internal variable
+
     private var configurator: SignInConfigurator
-    private var sessionStarage: SessionStorage
+    private var connection: ConnectionPublisher
     private var scopePermissions: [String]?
     
-    @Published private var currentUserSession: UserSession?
-    
     private var cancellableBag = Set<AnyCancellable>()
-    
-    private func configure() {
+
+    // lifecycle
+    init(configurator: SignInConfigurator,
+         connection: ConnectionPublisher,
+         scopePermissions: [String]?) {
+        self.configurator = configurator
+        self.connection = connection
+        self.scopePermissions = scopePermissions
+        super.init()
         Task {
-            suscribeOnUser()
-            await sessionStarage.restorePreviousSession()
+            await connection.restorePreviousSession()
         }
+        subscribe()
     }
     
-    private func suscribeOnUser() {
-        if #available(iOS 14, *) {
-            sessionStarage
-                .$userSession
-                .assign(to: &self.$currentUserSession)
-        } else {
-            sessionStarage
-                .$userSession
-                .sink {
-                    self.currentUserSession = $0
-                }
-                .store(in: &self.cancellableBag)
-        }
+    private func subscribe() {
+        connection
+            .userSession
+            .assign(to: &self.$currentUserSession)
     }
 }
 
-// MARK: - SignInLaunched protocol implementstion
+// MARK: - SignInLaunchable protocol implementstion
 
 extension GoogleInteractor: SignInInteractable {
     // Retrieving user information. The Client can use SignInButton too.
@@ -77,7 +82,7 @@ extension GoogleInteractor: SignInInteractable {
         }
     }
     
-    func logOut() {
+    func signOut() {
         GIDSignIn.sharedInstance.signOut()
         // It is highly recommended that you provide users that signed in with Google the
         // ability to disconnect their Google account from your app. If the user deletes their account,
@@ -87,7 +92,7 @@ extension GoogleInteractor: SignInInteractable {
             // Google Account disconnected from your app.
             // Perform clean-up actions, such as deleting data associated with the
             //   disconnected account.
-            self.sessionStarage.closeCurrentUserSession()
+            self.connection.closeCurrentUserSession()
             self.logoutResult.send(true)
         }
     }
@@ -133,7 +138,7 @@ extension GoogleInteractor {
             throw SignInError.userIsUndefined
         } else if let user = user, checkPermissions(for: user) {
             do {
-                try sessionStarage.createUserSession(for: user)
+                try connection.createNewUser(for: user)
             } catch SignInError.failedUserData {
                 throw SignInError.failedUserData
             } catch {

@@ -9,6 +9,7 @@ import SwiftUI
 import GoogleSignInSwift
 
 /// SwiftUI content view for the Google Sign In button
+/// Just place this button on your LogIn view
 public struct SignInButton: View {
     public init() { }
     
