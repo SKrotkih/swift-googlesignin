@@ -13,16 +13,14 @@ public let packageAPI = PackageAPI()
 // The Package Public Interface
 public class PackageAPI {
     private var interactor: GoogleInteractor?
-    private var connection: ConnectionPublisher?
     private var configurator: GoogleConfigurator?
     
     /// Scope permissions depends on your app functionality and must be accepted by the Google team
     public func initialize(_ scopePermissions: [String]?) {
-        let localStorage = LocalStorage()
-        connection = ConnectionPublisher(localDataBase: localStorage)
-        configurator = GoogleConfigurator(localStorage: localStorage)
+        let localDataBase = LocalStorage()
+        configurator = GoogleConfigurator(localStorage: localDataBase)
         interactor = GoogleInteractor(configurator: configurator!,
-                                      connection: connection!,
+                                      localDataBase: localDataBase,
                                       scopePermissions: scopePermissions)
     }
     
@@ -63,12 +61,12 @@ public class PackageAPI {
         interactor?.addPermissions()
     }
     
-    /// The Client can subscribe on UserSession to have access to user profile and Google API tokens
-    public var userSessionObservable: Published<UserSession?>.Publisher? {
-        return interactor?.userSessionObservable
-    }
-    
-    public var userSession: UserSession? {
-        return interactor?.userSession
+    /// The Client can subscribe on the Google user's connect state
+    public var currentUser: CurrentValueSubject<UserSession?, Never> {
+        if let interactor {
+            return interactor.userSession
+        } else {
+            return CurrentValueSubject(nil)
+        }
     }
 }

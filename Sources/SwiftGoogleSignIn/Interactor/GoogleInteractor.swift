@@ -21,7 +21,7 @@ protocol SignInLaunchable {
 }
 
 protocol SignInObservable {
-    var userSessionObservable: Published<UserSession?>.Publisher { get }
+    var userSession: CurrentValueSubject<UserSession?, Never> { get }
     var loginResult: PassthroughSubject<Bool, SwiftError> { get }
     var logoutResult: PassthroughSubject<Bool, Never> { get }
 }
@@ -34,38 +34,55 @@ class GoogleInteractor: NSObject, ObservableObject {
     
     @Published private var currentUserSession: UserSession?
 
-    var userSessionObservable: Published<UserSession?>.Publisher { $currentUserSession }
-    var userSession: UserSession? { currentUserSession }
+    var userSession: CurrentValueSubject<UserSession?, Never> = CurrentValueSubject(nil)
     
     var presentingViewController: UIViewController?
     
     // Private, Internal variable
 
     private var configurator: SignInConfigurator
-    private var connection: ConnectionPublisher
     private var scopePermissions: [String]?
     
     private var cancellableBag = Set<AnyCancellable>()
 
+    private let userSessionKey = UserSession.keyName
+    private let localDataBase: DataPreservable
+    
     // lifecycle
     init(configurator: SignInConfigurator,
-         connection: ConnectionPublisher,
+         localDataBase: DataPreservable,
          scopePermissions: [String]?) {
         self.configurator = configurator
-        self.connection = connection
+        self.localDataBase = localDataBase
         self.scopePermissions = scopePermissions
         super.init()
         Task {
-            await connection.restorePreviousSession()
+            await restorePreviousSession()
         }
-        subscribe()
     }
     
-    private func subscribe() {
-        connection
-            .userSession
-            .assign(to: &self.$currentUserSession)
-    }
+
+//    private var __currentUserSession: UserSession? {
+//        didSet {
+//            if __currentUserSession == nil {
+//                localDataBase.removeObject(key: userSessionKey)
+//            }
+//            userSession.send(__currentUserSession)
+//        }
+//    }
+//
+//    var ___currentUserSession: UserSession? {
+//        if userSession.value == nil {
+//            let user: UserSession? = localDataBase.restoreObject(key: userSessionKey)
+//            userSession.send(user)
+//        }
+//        return __currentUserSession
+//    }
+
+    
+    
+    
+    
 }
 
 // MARK: - SignInLaunchable protocol implementstion
@@ -92,7 +109,7 @@ extension GoogleInteractor: SignInInteractable {
             // Google Account disconnected from your app.
             // Perform clean-up actions, such as deleting data associated with the
             //   disconnected account.
-            self.connection.closeCurrentUserSession()
+            self.userSession.send(nil)
             self.logoutResult.send(true)
         }
     }
@@ -131,14 +148,14 @@ extension GoogleInteractor {
         }
     }
     
-    private func parseSignInResult(_ user: GIDGoogleUser?, _ error: Error?) throws {
-        if let error = error {
+    private func parseSignInResult(_ googleUser: GIDGoogleUser?, _ error: Error?) throws {
+        if let error {
             throw SignInError.signInError(error)
-        } else if user == nil {
+        } else if googleUser == nil {
             throw SignInError.userIsUndefined
-        } else if let user = user, checkPermissions(for: user) {
+        } else if let googleUser, checkPermissions(for: googleUser) {
             do {
-                try connection.createNewUser(for: user)
+                try createNewUser(for: googleUser)
             } catch SignInError.failedUserData {
                 throw SignInError.failedUserData
             } catch {
@@ -171,5 +188,52 @@ extension GoogleInteractor {
                                            callback: { [weak self] user, error in
             self?.handleSignInResult(user, error)
         })
+    }
+}
+
+// MARK: - Restore previous session
+
+extension GoogleInteractor {
+    func restorePreviousSession() async {
+        do {
+//            if currentUserSession == nil {
+                let googleUser = await requestPreviousUser()
+                try createNewUser(for: googleUser)
+//            }
+        } catch SignInError.failedUserData {
+            fatalError("Unexpected exception")
+        } catch {
+            fatalError("Unexpected exception")
+        }
+    }
+    
+    private func requestPreviousUser() async -> GIDGoogleUser {
+        return await withCheckedContinuation { continuation in
+            // source here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
+            GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
+                if let user { continuation.resume(with: .success(user)) }
+            }
+        }
+    }
+}
+
+extension GoogleInteractor {
+    private func createNewUser(for googleUser: GIDGoogleUser) throws {
+        do {
+            let profile = UserProfile(googleUser)
+            let remoteSession = UserAuthentication(googleUser)
+            if profile == nil || remoteSession == nil {
+                throw SignInError.failedUserData
+            }
+            let userSession = UserSession(profile: profile!, remoteSession: remoteSession!)
+            self.userSession.send(userSession)
+//            try localDataBase.saveObject(userSession, key: userSessionKey)
+//            __currentUserSession = userSession
+        } catch SwiftError.message(let error) {
+            fatalError("\(error): Unexpected exception")
+        } catch {
+            self.userSession.send(nil)
+            throw SignInError.failedUserData
+        }
     }
 }
