@@ -7,12 +7,12 @@
 
 import Foundation
 
-public struct UserSession: Codable {
+public struct UserSession {
     
     // MARK: - Properties
     public let profile: UserProfile?
     public let remoteSession: UserAuthentication?
-    public let connectionError: String?
+    public let connectionError: SwiftError?
     
     // MARK: - Methods
     public init(profile: UserProfile, remoteSession: UserAuthentication) {
@@ -21,7 +21,7 @@ public struct UserSession: Codable {
         self.connectionError = nil
     }
 
-    public init(error: String?) {
+    public init(error: SwiftError?) {
         self.profile = nil
         self.remoteSession = nil
         self.connectionError = error

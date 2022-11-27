@@ -96,20 +96,20 @@ extension GoogleInteractor {
         } catch SignInError.signInError(let error) {
             if (error as NSError).code == GIDSignInError.hasNoAuthInKeychain.rawValue {
                 let text = "401: \(SignInError.signInError(error).localizedString())"
-                self.userSession.send(UserSession(error: text))
+                self.userSession.send(UserSession(error: SwiftError.message(text)))
             } else {
-                self.userSession.send(UserSession(error: error.localizedDescription))
+                self.userSession.send(UserSession(error: SwiftError.message(error.localizedDescription)))
             }
         } catch SignInError.userIsUndefined {
-            let text = "401: \(SignInError.userIsUndefined.localizedString())"
-            self.userSession.send(UserSession(error: text))
+            let error = SwiftError.systemMessage(401, SignInError.userIsUndefined.localizedString())
+            self.userSession.send(UserSession(error: error))
         } catch SignInError.permissionsError {
-            let text = "501: \(SignInError.permissionsError.localizedString())"
-            self.userSession.send(UserSession(error: text))
+            let error = SwiftError.systemMessage(501, SignInError.permissionsError.localizedString())
+            self.userSession.send(UserSession(error: error))
         } catch SignInError.failedUserData {
-            self.userSession.send(UserSession(error: SignInError.failedUserData.localizedString()))
+            self.userSession.send(UserSession(error: SwiftError.message(SignInError.failedUserData.localizedString())))
         } catch {
-            self.userSession.send(UserSession(error: "Unexpected system error"))
+            self.userSession.send(UserSession(error: SwiftError.message("Unexpected system error")))
         }
     }
     
@@ -177,7 +177,7 @@ extension GoogleInteractor {
             let userSession = UserSession(profile: profile, remoteSession: remoteSession)
             self.userSession.send(userSession)
         } else {
-            self.userSession.send(UserSession(error: SignInError.failedUserData.localizedDescription))
+            self.userSession.send(UserSession(error: SwiftError.message(SignInError.failedUserData.localizedDescription)))
         }
     }
 }
