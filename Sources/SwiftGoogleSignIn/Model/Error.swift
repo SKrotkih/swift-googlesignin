@@ -1,7 +1,7 @@
 //  Error.swift
 //  SwiftGoogleSignIn Package
 //
-//  Created by Serhii Krotkih on 6/14/22.
+//  Created by Serhii Krotkykh on 6/14/22.
 //
 
 import Foundation
@@ -45,6 +45,7 @@ enum SignInError: Error {
     case userIsUndefined
     case permissionsError
     case failedUserData
+    case message(String)
 
     func localizedString() -> String {
         switch self {
@@ -56,6 +57,8 @@ enum SignInError: Error {
             return "Please add scopes to have ability to manage your YouTube videos. The app will not work properly"
         case .failedUserData:
             return "User data is wrong. Please try again later"
+        case .message(let text):
+            return text
         }
     }
 }

@@ -2,16 +2,35 @@
 //  PackageAPI.swift
 //  SwiftGoogleSignIn Package
 //
-//  Created by Serhii Krotkih on 6/14/22.
+//  Created by Serhii Krotkykh on 6/14/22.
 //
 
 import UIKit
 import Combine
 
-public let packageAPI = PackageAPI()
+public let API: SwiftGoogleSignInInterface = PackageAPI()
+
+public protocol SwiftGoogleSignInInterface {
+    func initialize(_ scopePermissions: [String]?)
+    /// The Client has to handle openUrl
+    /// The Client can subscribe on the Google user's connect state
+    var publisher: AnyPublisher<UserSession, Never> { get }
+    /// Just remember: we use SignInButton for the logging in Google account
+    func logIn()
+    /// Log out from the User's Google Account
+    func logOut()
+    /// As optional we can send request with scopes
+    func requestPermissions()
+    ///
+    func openUrl(_ url: URL) -> Bool
+    /// The Client has to set up UIViewController for Goggle SignIn UI base view
+    var presentingViewController: UIViewController? { get set }
+    /// The Client can subscribe on log out result
+    var logoutResult: PassthroughSubject<Bool, Never>? { get }
+}
 
 // The Package Public Interface
-public class PackageAPI {
+public class PackageAPI: SwiftGoogleSignInInterface {
     private var interactor: GoogleInteractor?
     private var configurator: GoogleConfigurator?
     
@@ -29,20 +48,12 @@ public class PackageAPI {
     }
     
     /// The Client has to set up UIViewController for Goggle SignIn UI base view
-    public var presentingViewController: UIViewController? {
-        didSet {
-            interactor?.presentingViewController = presentingViewController
-        }
-    }
+    public var presentingViewController: UIViewController?
     
     /// Just remember: we use SignInButton for the logging in Google account
     public func logIn() {
-        interactor?.signIn()
-    }
-    
-    /// The Client can subscribe on log in result
-    public var loginResult: PassthroughSubject<Bool, SwiftError>? {
-        return interactor?.loginResult
+        guard let viewController = presentingViewController else { fatalError("The presentingViewController has not been defined") }
+        interactor?.signIn(with: viewController)
     }
     
     /// Log out from the User's Google Account
@@ -57,15 +68,16 @@ public class PackageAPI {
     
     /// As optional we can send request with scopes
     public func requestPermissions() {
-        interactor?.addPermissions()
+        guard let viewController = presentingViewController else { fatalError("The presentingViewController has not been defined") }
+        interactor?.addPermissions(with: viewController)
     }
     
     /// The Client can subscribe on the Google user's connect state
-    public var currentUser: CurrentValueSubject<UserSession?, Never> {
+    public var publisher: AnyPublisher<UserSession, Never> {
         if let interactor {
-            return interactor.userSession
+            return interactor.userSession.eraseToAnyPublisher()
         } else {
-            return CurrentValueSubject(nil)
+            fatalError("The package Google interactor should be defined")
         }
     }
 }

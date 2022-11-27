@@ -2,7 +2,7 @@
 //  UserProfile.swift
 //  SwiftGoogleSignIn Package
 //
-//  Created by Serhii Krotkih on 6/14/22.
+//  Created by Serhii Krotkykh on 6/14/22.
 //
 
 import Foundation

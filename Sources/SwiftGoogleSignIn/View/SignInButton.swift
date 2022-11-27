@@ -2,7 +2,7 @@
 //  SignInButton.swift
 //  SwiftGoogleSignIn Package
 //
-//  Created by Serhii Krotkih on 6/14/22.
+//  Created by Serhii Krotkykh on 6/14/22.
 //
 
 import SwiftUI
@@ -20,7 +20,7 @@ public struct SignInButton: View {
         GoogleSignInButton(scheme: self.colorSheme == .dark ? .dark : .light,
                            style: .standard,
                            action: {
-            packageAPI.logIn()
+            API.logIn()
         })
     }
 }

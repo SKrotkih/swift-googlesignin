@@ -3,13 +3,13 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow"/>
 </p>
 
-# SwiftGoogleSignIn v1.52
+# SwiftGoogleSignIn v1.53
 
 SwiftGoogleSignIn is an open-source package which uses [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start) and can be used to make sign in your app.
 [Here](https://github.com/SKrotkih/LiveEvents) you can find an example of using this package.
 
 ## Requirements
-iOS 13, Swift 5.7
+iOS 15, Swift 5.7
 
 ## How to install it:
 
@@ -38,14 +38,14 @@ iOS 13, Swift 5.7
 
    func application(_ application: UIApplication,
                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-      SwiftGoogleSignIn.packageAPI.initialize(googleAPIscopes) // nil is a defaut value 
+      SwiftGoogleSignIn.API.initialize(googleAPIscopes) // nil is a defaut value 
    }
    
    func application(_ application: UIApplication,
                     open url: URL,
                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
    ) -> Bool {
-       return SwiftGoogleSignIn.packageAPI.openUrl(url)
+       return SwiftGoogleSignIn.API.openUrl(url)
    }
 ```
  
@@ -65,7 +65,7 @@ iOS 13, Swift 5.7
 ```
 - subscribe on the User sign in result action:
 ```
-   SwiftGoogleSignIn.packageAPI.user?
+   SwiftGoogleSignIn.API.user?
       .receive(on: RunLoop.main)
       .sink { in
          // $0 is a UserProfile data
@@ -74,7 +74,7 @@ iOS 13, Swift 5.7
 ```      
 - subscribe on the User sign in result action (if something went wrong):
 ```
-   SwiftGoogleSignIn.packageAPI.loginResult?
+   SwiftGoogleSignIn.API.loginResult?
       .sink(receiveCompletion: { completion in
          switch completion {
             case .failure(let error):
