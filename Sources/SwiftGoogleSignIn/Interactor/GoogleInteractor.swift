@@ -46,43 +46,17 @@ class GoogleInteractor: NSObject, ObservableObject {
     private var cancellableBag = Set<AnyCancellable>()
 
     private let userSessionKey = UserSession.keyName
-    private let localDataBase: DataPreservable
     
     // lifecycle
     init(configurator: SignInConfigurator,
-         localDataBase: DataPreservable,
          scopePermissions: [String]?) {
         self.configurator = configurator
-        self.localDataBase = localDataBase
         self.scopePermissions = scopePermissions
         super.init()
         Task {
             await restorePreviousSession()
         }
     }
-    
-
-//    private var __currentUserSession: UserSession? {
-//        didSet {
-//            if __currentUserSession == nil {
-//                localDataBase.removeObject(key: userSessionKey)
-//            }
-//            userSession.send(__currentUserSession)
-//        }
-//    }
-//
-//    var ___currentUserSession: UserSession? {
-//        if userSession.value == nil {
-//            let user: UserSession? = localDataBase.restoreObject(key: userSessionKey)
-//            userSession.send(user)
-//        }
-//        return __currentUserSession
-//    }
-
-    
-    
-    
-    
 }
 
 // MARK: - SignInLaunchable protocol implementstion
@@ -196,10 +170,8 @@ extension GoogleInteractor {
 extension GoogleInteractor {
     func restorePreviousSession() async {
         do {
-//            if currentUserSession == nil {
-                let googleUser = await requestPreviousUser()
-                try createNewUser(for: googleUser)
-//            }
+            let googleUser = await requestPreviousUser()
+            try createNewUser(for: googleUser)
         } catch SignInError.failedUserData {
             fatalError("Unexpected exception")
         } catch {
@@ -227,8 +199,6 @@ extension GoogleInteractor {
             }
             let userSession = UserSession(profile: profile!, remoteSession: remoteSession!)
             self.userSession.send(userSession)
-//            try localDataBase.saveObject(userSession, key: userSessionKey)
-//            __currentUserSession = userSession
         } catch SwiftError.message(let error) {
             fatalError("\(error): Unexpected exception")
         } catch {

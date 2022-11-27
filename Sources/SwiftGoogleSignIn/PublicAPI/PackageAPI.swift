@@ -20,7 +20,6 @@ public class PackageAPI {
         let localDataBase = LocalStorage()
         configurator = GoogleConfigurator(localStorage: localDataBase)
         interactor = GoogleInteractor(configurator: configurator!,
-                                      localDataBase: localDataBase,
                                       scopePermissions: scopePermissions)
     }
     
