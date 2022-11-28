@@ -22,16 +22,12 @@ protocol SignInLaunchable {
 
 protocol SignInObservable {
     var userSession: CurrentValueSubject<UserSession, Never> { get }
-    var logoutResult: PassthroughSubject<Bool, Never> { get }
 }
 
 // MARK: - SignIn Interactor
 
 class GoogleInteractor: NSObject, ObservableObject {
     var userSession: CurrentValueSubject<UserSession, Never> = CurrentValueSubject(UserSession.empty)
-
-    // TODO: remove it
-    let logoutResult = PassthroughSubject<Bool, Never>()
     
     // Private, Internal variable
     private var configurator: SignInConfigurator
@@ -52,7 +48,7 @@ class GoogleInteractor: NSObject, ObservableObject {
 // MARK: - SignInLaunchable protocol implementstion
 
 extension GoogleInteractor: SignInInteractable {
-    // Retrieving user information. The Client can use SignInButton too.
+    /// Retrieving user information. The Client can use SignInButton too.
     func signIn(with viewController: UIViewController) {
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
         GIDSignIn.sharedInstance.signIn(with: configurator.signInConfig,
@@ -73,7 +69,6 @@ extension GoogleInteractor: SignInInteractable {
             // Perform clean-up actions, such as deleting data associated with the
             //   disconnected account.
             self.userSession.send(UserSession.empty)
-            self.logoutResult.send(true)
         }
     }
 

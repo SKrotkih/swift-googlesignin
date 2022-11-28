@@ -12,21 +12,18 @@ public let API: SwiftGoogleSignInInterface = PackageAPI()
 
 public protocol SwiftGoogleSignInInterface {
     func initialize(_ scopePermissions: [String]?)
-    /// The Client has to handle openUrl
-    /// The Client can subscribe on the Google user's connect state
+    /// The Client has to set up UIViewController for Goggle SignIn UI base view
+    var presentingViewController: UIViewController? { get set }
+    /// Google user's connect state publisher
     var publisher: AnyPublisher<UserSession, Never> { get }
-    /// Just remember: we use SignInButton for the logging in Google account
+    /// Please use SignInButton view for log in
     func logIn()
-    /// Log out from the User's Google Account
+    /// Log out. Handle result via publisher
     func logOut()
     /// As optional we can send request with scopes
     func requestPermissions()
-    ///
+    /// The Client has to handle openUrl app delegate event
     func openUrl(_ url: URL) -> Bool
-    /// The Client has to set up UIViewController for Goggle SignIn UI base view
-    var presentingViewController: UIViewController? { get set }
-    /// The Client can subscribe on log out result
-    var logoutResult: PassthroughSubject<Bool, Never>? { get }
 }
 
 // The Package Public Interface
@@ -42,15 +39,24 @@ public class PackageAPI: SwiftGoogleSignInInterface {
                                       scopePermissions: scopePermissions)
     }
     
-    /// The Client has to handle openUrl
+    /// The Client can subscribe on the Google user's connect state
+    public var publisher: AnyPublisher<UserSession, Never> {
+        if let interactor {
+            return interactor.userSession.eraseToAnyPublisher()
+        } else {
+            fatalError("The package Google interactor should be defined")
+        }
+    }
+
+    /// Handle openUrl app delegate event
     public func openUrl(_ url: URL) -> Bool {
         return interactor?.openUrl(url) ?? false
     }
     
-    /// The Client has to set up UIViewController for Goggle SignIn UI base view
+    /// Define viewcontroller which is used for the Goggle SignIn base view
     public var presentingViewController: UIViewController?
     
-    /// Just remember: we use SignInButton for the logging in Google account
+    /// Log in Google account. Use SignInButton for that
     public func logIn() {
         guard let viewController = presentingViewController else { fatalError("The presentingViewController has not been defined") }
         interactor?.signIn(with: viewController)
@@ -60,24 +66,10 @@ public class PackageAPI: SwiftGoogleSignInInterface {
     public func logOut() {
         interactor?.signOut()
     }
-    
-    /// The Client can subscribe on log out result
-    public var logoutResult: PassthroughSubject<Bool, Never>? {
-        return interactor?.logoutResult
-    }
-    
+
     /// As optional we can send request with scopes
     public func requestPermissions() {
         guard let viewController = presentingViewController else { fatalError("The presentingViewController has not been defined") }
         interactor?.addPermissions(with: viewController)
-    }
-    
-    /// The Client can subscribe on the Google user's connect state
-    public var publisher: AnyPublisher<UserSession, Never> {
-        if let interactor {
-            return interactor.userSession.eraseToAnyPublisher()
-        } else {
-            fatalError("The package Google interactor should be defined")
-        }
     }
 }
