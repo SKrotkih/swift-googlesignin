@@ -5,7 +5,7 @@
 
 # SwiftGoogleSignIn v1.56
 
-SwiftGoogleSignIn is an open-source package which uses [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start) and can be used to make sign in your app.
+SwiftGoogleSignIn is an open-source package which uses [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start) and can be used to make sign in.
 [Here](https://github.com/SKrotkih/LiveEvents) you can find an example of using this package.
 
 ## Requirements
@@ -29,18 +29,25 @@ iOS 15, Swift 5.7
 
 ```
    import SwiftGoogleSignIn
+```
 
-   // There are needed sensitive scopes for Google APIs to have ability to work properly
-   // Make sure they are presented in your app. Then send request on verification
-   let googleAPIscopes: [String]? = ["https://www.googleapis.com/auth/youtube",
+First of all you need approved scope permission. There are sensitive scopes for Google APIs to have ability to work properly
+Make sure they are presented in your app. Then send request on verification. After the verification provide them for the
+initializa method:
+
+```
+   let googleAPIscopes: [String] = ["https://www.googleapis.com/auth/youtube",
        "https://www.googleapis.com/auth/youtube.readonly",
        "https://www.googleapis.com/auth/youtube.force-ssl"]
 
    func application(_ application: UIApplication,
                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-      SwiftGoogleSignIn.API.initialize(googleAPIscopes) // nil is a defaut value 
+      SwiftGoogleSignIn.API.initialize(googleAPIscopes) 
    }
+```
+ Handle open URL: 
    
+```
    func application(_ application: UIApplication,
                     open url: URL,
                     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
@@ -49,12 +56,12 @@ iOS 15, Swift 5.7
    }
 ```
  
-- put 'Sign In' button:
+- put 'Sign In' button on your Log in screen:
 
 ```
    import SwiftGoogleSignIn
 
-   struct SignInBodyView: View {
+   struct LogInContentView: View {
 
       var body: some View {
          ...
@@ -65,33 +72,36 @@ iOS 15, Swift 5.7
 ```
 - subscribe on the User sign in result action:
 ```
-   SwiftGoogleSignIn.API.user?
+   SwiftGoogleSignIn.API
+      .publisher
       .receive(on: RunLoop.main)
-      .sink { in
-         // $0 is a UserProfile data
+      .sink { session in
+         // session is a UserSession structure data
       }
       .store(in: &self.cancellableBag)
 ```      
-- subscribe on the User sign in result action (if something went wrong):
+
+## Interface:
+
 ```
-   SwiftGoogleSignIn.API.loginResult?
-      .sink(receiveCompletion: { completion in
-         switch completion {
-            case .failure(let error):
-               // handle the error
-            default:
-               break
-         }
-         }, receiveValue: { theUserIsLoggedIn in
-            if theUserIsLoggedIn {
-               // the user signed in successfully
-            }
-         })
-         .store(in: &cancellableBag)
+    func initialize(_ scopePermissions: [String]?)
+    /// The Client has to set up UIViewController for Goggle SignIn UI base view
+    var presentingViewController: UIViewController? { get set }
+    /// Google user's connect state publisher
+    var publisher: AnyPublisher<UserSession, Never> { get }
+    /// Please use SignInButton view for log in
+    func logIn()
+    /// Log out. Handle result via publisher
+    func logOut()
+    /// As optional we can send request with scopes
+    func requestPermissions()
+    /// The Client has to handle openUrl app delegate event
+    func openUrl(_ url: URL) -> Bool
 ```
 
-[Example of using the package](https://github.com/SKrotkih/LiveEvents).
+Please feel free to learn [example of using the package](https://github.com/SKrotkih/LiveEvents)
 
 ## History
 
-- 20-09-2022. Released 1.43. 
+- 28-11-2022. Released 1.56
+- 20-09-2022. Released 1.43 
