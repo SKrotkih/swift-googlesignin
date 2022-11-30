@@ -8,6 +8,8 @@
 import Foundation
 import GoogleSignIn
 
+/// Of the User profile info
+/// It's a part of the UserSession structure data
 public struct UserProfile: Codable, Equatable {
     public let userId: String
     public let fullName: String

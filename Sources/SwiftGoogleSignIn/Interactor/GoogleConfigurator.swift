@@ -11,7 +11,7 @@ protocol SignInConfigurator {
 }
 
 /**
- Use this config for the GoogleSignIn's signIn method
+ Client should configure the Google Sign-In for iOS and macOS package before using
  */
 class GoogleConfigurator: SignInConfigurator {
     private let localStorage: ConfigurableData
@@ -21,9 +21,11 @@ class GoogleConfigurator: SignInConfigurator {
     }
 
     var signInConfig: GIDConfiguration {
+        // it does not make sence to cache the configuration on my opinion
         return GIDConfiguration(clientID: clientID)
     }
 
+    // We use the client id from the config plist file in main bundle
     lazy fileprivate var clientID: String = {
         return localStorage.clientID
     }()

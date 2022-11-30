@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// The main structure with the User's account and connection info
 public struct UserSession {
     
     // MARK: - Properties

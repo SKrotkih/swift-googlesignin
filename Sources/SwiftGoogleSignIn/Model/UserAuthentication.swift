@@ -8,7 +8,8 @@
 import Foundation
 import GoogleSignIn
 
-// Google API parameters store
+/// Google API parameters store
+/// It's a part of the UserSession structure data
 public struct UserAuthentication: Codable, Equatable {
     public let userId: String
     public let idToken: String

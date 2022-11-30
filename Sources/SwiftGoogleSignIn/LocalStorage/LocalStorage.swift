@@ -17,6 +17,7 @@ protocol ConfigurableData {
     var clientID: String { get }
 }
 
+/// Serialize objects to the userdefaults storage. we used to use it for UserSession but it does not make sence on my opinion
 struct LocalStorage: DataPreservable {
     func saveObject<T: Encodable>(_ object: T, key: String) throws {
         if let data = try? JSONEncoder().encode(object) {
@@ -56,7 +57,7 @@ extension LocalStorage: ConfigurableData {
     }
 
     /**
-    Get user's Client ID from the local storage
+    Get user's Client ID from config plist file in the main bundle
      */
     var clientID: String {
         let key = "CLIENT_ID"

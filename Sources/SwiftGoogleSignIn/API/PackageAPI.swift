@@ -44,7 +44,7 @@ public class PackageAPI: SwiftGoogleSignInInterface {
         if let interactor {
             return interactor.userSession.eraseToAnyPublisher()
         } else {
-            fatalError("The package Google interactor should be defined")
+            fatalError("Please use initialize before start of using the package")
         }
     }
 
@@ -58,7 +58,7 @@ public class PackageAPI: SwiftGoogleSignInInterface {
     
     /// Log in Google account. Use SignInButton for that
     public func logIn() {
-        guard let viewController = presentingViewController else { fatalError("The presentingViewController has not been defined") }
+        guard let viewController = presentingViewController else { fatalError("Please send presentingViewController before") }
         interactor?.signIn(with: viewController)
     }
     
@@ -69,7 +69,7 @@ public class PackageAPI: SwiftGoogleSignInInterface {
 
     /// As optional we can send request with scopes
     public func requestPermissions() {
-        guard let viewController = presentingViewController else { fatalError("The presentingViewController has not been defined") }
+        guard let viewController = presentingViewController else { fatalError("Please send presentingViewController before") }
         interactor?.addPermissions(with: viewController)
     }
 }

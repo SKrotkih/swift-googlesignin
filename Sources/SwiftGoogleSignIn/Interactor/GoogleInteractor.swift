@@ -10,7 +10,7 @@ import GoogleSignIn
 import GoogleSignInSwift
 import Combine
 
-// MARK: - SignIn Interactor Protocol
+// MARK: - The SignIn Interactor Protocol
 
 typealias SignInInteractable = SignInLaunchable & SignInObservable
 
@@ -73,7 +73,7 @@ extension GoogleInteractor: SignInInteractable {
     }
 
     func openUrl(_ url: URL) -> Bool {
-        // The source looking for here: https://developers.google.com/identity/sign-in/ios/sign-in#ios_uiapplicationdelegate
+        // According https://developers.google.com/identity/sign-in/ios/sign-in#ios_uiapplicationdelegate
         if GIDSignIn.sharedInstance.handle(url) {
             return true
         } else {
@@ -154,7 +154,7 @@ extension GoogleInteractor {
     
     private func requestPreviousUser() async -> GIDGoogleUser {
         return await withCheckedContinuation { continuation in
-            // source here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
+            // The source is here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
             GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
                 if let user { continuation.resume(with: .success(user)) }
             }
