@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow"/>
 </p>
 
-# SwiftGoogleSignIn v1.57
+# SwiftGoogleSignIn v1.58
 
 SwiftGoogleSignIn is an open-source package which uses [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start) and can be used to make sign in.
 [Here](https://github.com/SKrotkih/LiveEvents) you can find an example of using this package.
@@ -78,7 +78,6 @@ initializa method:
       .sink { session in
          // session is a UserSession structure data
       }
-      .store(in: &self.cancellableBag)
 ```      
 
 ## Interface:
@@ -88,7 +87,7 @@ initializa method:
     /// The Client has to set up UIViewController for Goggle SignIn UI base view
     var presentingViewController: UIViewController? { get set }
     /// Google user's connect state publisher
-    var publisher: AnyPublisher<UserSession, Never> { get }
+    var publisher: AnyPublisher<UserSession, SwiftError> { get }
     /// Please use SignInButton view for log in
     func logIn()
     /// Log out. Handle result via publisher
@@ -99,10 +98,10 @@ initializa method:
     func openUrl(_ url: URL) -> Bool
 ```
 
-Please feel free to learn [example of using the package](https://github.com/SKrotkih/LiveEvents)
-Pay attention on the SignInService, AuthState, AuthAction, LogInView swift files.
+[Example of using the package](https://github.com/SKrotkih/LiveEvents)
 
 ## History
 
-- 28-11-2022. Released 1.56
-- 20-09-2022. Released 1.43 
+- 09-12-2022. 1.58 Release. Include SwiftError in to the session publisher 
+- 28-11-2022. 1.56 Release
+- 20-09-2022. 1.43 Release 

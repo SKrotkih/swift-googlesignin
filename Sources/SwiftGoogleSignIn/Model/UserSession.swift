@@ -13,27 +13,19 @@ public struct UserSession {
     // MARK: - Properties
     public let profile: UserProfile?
     public let remoteSession: UserAuthentication?
-    public let error: SwiftError?
     
     // MARK: - Methods
-    public init(profile: UserProfile, remoteSession: UserAuthentication) {
+    public init(profile: UserProfile? = nil, remoteSession: UserAuthentication? = nil) {
         self.profile = profile
         self.remoteSession = remoteSession
-        self.error = nil
     }
 
-    public init(error: SwiftError?) {
-        self.profile = nil
-        self.remoteSession = nil
-        self.error = error
-    }
-    
     public var isConnected: Bool {
         return profile != nil && remoteSession != nil
     }
 
     static var empty: UserSession {
-        return UserSession(error: nil)
+        return UserSession()
     }
 }
 

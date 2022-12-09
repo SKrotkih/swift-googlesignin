@@ -15,7 +15,7 @@ public protocol SwiftGoogleSignInInterface {
     /// The Client has to set up UIViewController for Goggle SignIn UI base view
     var presentingViewController: UIViewController? { get set }
     /// Google user's connect state publisher
-    var publisher: AnyPublisher<UserSession, Never> { get }
+    var publisher: AnyPublisher<UserSession, SwiftError> { get }
     /// Please use SignInButton view for log in
     func logIn()
     /// Log out. Handle result via publisher
@@ -40,7 +40,7 @@ public class PackageAPI: SwiftGoogleSignInInterface {
     }
     
     /// The Client can subscribe on the Google user's connect state
-    public var publisher: AnyPublisher<UserSession, Never> {
+    public var publisher: AnyPublisher<UserSession, SwiftError> {
         if let interactor {
             return interactor.userSession.eraseToAnyPublisher()
         } else {

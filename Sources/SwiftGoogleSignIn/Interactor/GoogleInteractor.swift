@@ -21,13 +21,13 @@ protocol SignInLaunchable {
 }
 
 protocol SignInObservable {
-    var userSession: CurrentValueSubject<UserSession, Never> { get }
+    var userSession: CurrentValueSubject<UserSession, SwiftError> { get }
 }
 
 // MARK: - SignIn Interactor
 
 class GoogleInteractor: NSObject, ObservableObject {
-    var userSession: CurrentValueSubject<UserSession, Never> = CurrentValueSubject(UserSession.empty)
+    var userSession: CurrentValueSubject<UserSession, SwiftError> = CurrentValueSubject(UserSession.empty)
     
     // Private, Internal variable
     private var configurator: SignInConfigurator
@@ -64,11 +64,15 @@ extension GoogleInteractor: SignInInteractable {
         // ability to disconnect their Google account from your app. If the user deletes their account,
         // you must delete the information that your app obtained from the Google APIs.
         GIDSignIn.sharedInstance.disconnect { error in
-            guard error == nil else { return }
-            // Google Account disconnected from your app.
-            // Perform clean-up actions, such as deleting data associated with the
-            //   disconnected account.
-            self.userSession.send(UserSession.empty)
+            switch error {
+            case .some(let error):
+                self.userSession.send(completion: .failure(SwiftError.message(error.localizedDescription)))
+            case .none:
+                // Google Account disconnected from your app.
+                // Perform clean-up actions, such as deleting data associated with the
+                //   disconnected account.
+                self.userSession.send(UserSession.empty)
+            }
         }
     }
 
@@ -91,20 +95,20 @@ extension GoogleInteractor {
         } catch SignInError.signInError(let error) {
             if (error as NSError).code == GIDSignInError.hasNoAuthInKeychain.rawValue {
                 let text = "401: \(SignInError.signInError(error).localizedString())"
-                self.userSession.send(UserSession(error: SwiftError.message(text)))
+                userSession.send(completion: .failure(SwiftError.message(text)))
             } else {
-                self.userSession.send(UserSession(error: SwiftError.message(error.localizedDescription)))
+                userSession.send(completion: .failure(SwiftError.message(error.localizedDescription)))
             }
         } catch SignInError.userIsUndefined {
             let error = SwiftError.systemMessage(401, SignInError.userIsUndefined.localizedString())
-            self.userSession.send(UserSession(error: error))
+            userSession.send(completion: .failure(error))
         } catch SignInError.permissionsError {
             let error = SwiftError.systemMessage(501, SignInError.permissionsError.localizedString())
-            self.userSession.send(UserSession(error: error))
+            userSession.send(completion: .failure(error))
         } catch SignInError.failedUserData {
-            self.userSession.send(UserSession(error: SwiftError.message(SignInError.failedUserData.localizedString())))
+            userSession.send(completion: .failure( SwiftError.message(SignInError.failedUserData.localizedString())))
         } catch {
-            self.userSession.send(UserSession(error: SwiftError.message("Unexpected system error")))
+            userSession.send(completion: .failure(SwiftError.message("Unexpected system error")))
         }
     }
     
@@ -172,7 +176,7 @@ extension GoogleInteractor {
             let userSession = UserSession(profile: profile, remoteSession: remoteSession)
             self.userSession.send(userSession)
         } else {
-            self.userSession.send(UserSession(error: SwiftError.message(SignInError.failedUserData.localizedDescription)))
+            userSession.send(completion: .failure( SwiftError.message(SignInError.failedUserData.localizedDescription)))
         }
     }
 }
