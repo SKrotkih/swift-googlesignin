@@ -3,7 +3,7 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow"/>
 </p>
 
-# SwiftGoogleSignIn v1.58
+# SwiftGoogleSignIn v1.59
 
 SwiftGoogleSignIn is an open-source package which uses [Google Sign-In for iOS and macOS](https://developers.google.com/identity/sign-in/ios/start) and can be used to make sign in.
 [Here](https://github.com/SKrotkih/LiveEvents) you can find an example of using this package.
@@ -73,11 +73,21 @@ initializa method:
 - subscribe on the User sign in result action:
 ```
    SwiftGoogleSignIn.API
-      .publisher
-      .receive(on: RunLoop.main)
-      .sink { session in
-         // session is a UserSession structure data
-      }
+       .publisher
+       .receive(on: RunLoop.main)
+       .sink(
+           receiveCompletion: { result in
+               if case let .failure(error) = result {
+                   // parse the error
+               }},
+            receiveValue: { session in
+               if session.isConnected {
+                   // success connect
+               } else {
+                   // failed connect
+               }
+            }
+        )
 ```      
 
 ## Interface:

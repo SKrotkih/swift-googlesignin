@@ -41,21 +41,21 @@ public enum SwiftError: Error {
 }
 
 enum SignInError: Error {
-    case signInError(Error)
-    case userIsUndefined
+    case failedSignIn(Error)
+    case undefinedUser
     case permissionsError
-    case failedUserData
+    case userDataError
     case message(String)
 
     func localizedString() -> String {
         switch self {
-        case .signInError:
+        case .failedSignIn:
             return "The user has not signed in before or he has since signed out"
-        case .userIsUndefined:
+        case .undefinedUser:
             return "The user has not signed in before or he has since signed out"
         case .permissionsError:
             return "Please add scopes to have ability to manage your YouTube videos. The app will not work properly"
-        case .failedUserData:
+        case .userDataError:
             return "User data is wrong. Please try again later"
         case .message(let text):
             return text

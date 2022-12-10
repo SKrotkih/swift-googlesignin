@@ -1,5 +1,5 @@
 //
-//  GoogleInteractor.swift
+//  GoogleSignInService.swift
 //  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkykh on 6/14/22.
@@ -10,9 +10,9 @@ import GoogleSignIn
 import GoogleSignInSwift
 import Combine
 
-// MARK: - The SignIn Interactor Protocol
+// MARK: - Google SignIn Service Protocol
 
-typealias SignInInteractable = SignInLaunchable & SignInObservable
+typealias SignInServiceProtocol = SignInLaunchable & SignInObservable
 
 protocol SignInLaunchable {
     func signIn(with viewController: UIViewController)
@@ -24,9 +24,9 @@ protocol SignInObservable {
     var userSession: CurrentValueSubject<UserSession, SwiftError> { get }
 }
 
-// MARK: - SignIn Interactor
+// MARK: - Google Sign In Service Implementation
 
-class GoogleInteractor: NSObject, ObservableObject {
+class GoogleSignInService: NSObject, ObservableObject {
     var userSession: CurrentValueSubject<UserSession, SwiftError> = CurrentValueSubject(UserSession.empty)
     
     // Private, Internal variable
@@ -47,7 +47,7 @@ class GoogleInteractor: NSObject, ObservableObject {
 
 // MARK: - SignInLaunchable protocol implementstion
 
-extension GoogleInteractor: SignInInteractable {
+extension GoogleSignInService: SignInServiceProtocol {
     /// Retrieving user information. The Client can use SignInButton too.
     func signIn(with viewController: UIViewController) {
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
@@ -77,58 +77,60 @@ extension GoogleInteractor: SignInInteractable {
     }
 
     func openUrl(_ url: URL) -> Bool {
-        // According https://developers.google.com/identity/sign-in/ios/sign-in#ios_uiapplicationdelegate
-        if GIDSignIn.sharedInstance.handle(url) {
-            return true
-        } else {
-            return false
-        }
+        // https://developers.google.com/identity/sign-in/ios/sign-in#ios_uiapplicationdelegate
+        return GIDSignIn.sharedInstance.handle(url)
     }
 }
 
 // MARK: - Google Sign In Handler
 
-extension GoogleInteractor {
+extension GoogleSignInService {
+    // [START signin_handler]
     private func handleSignInResult(_ user: GIDGoogleUser?, _ error: Error?) {
         do {
             try self.parseSignInResult(user, error)
-        } catch SignInError.signInError(let error) {
+        } catch SignInError.failedSignIn(let error) {
             if (error as NSError).code == GIDSignInError.hasNoAuthInKeychain.rawValue {
-                let text = "401: \(SignInError.signInError(error).localizedString())"
+                let text = "401: \(SignInError.failedSignIn(error).localizedString())"
                 userSession.send(completion: .failure(SwiftError.message(text)))
             } else {
                 userSession.send(completion: .failure(SwiftError.message(error.localizedDescription)))
             }
-        } catch SignInError.userIsUndefined {
-            let error = SwiftError.systemMessage(401, SignInError.userIsUndefined.localizedString())
+        } catch SignInError.undefinedUser {
+            let error = SwiftError.systemMessage(401, SignInError.undefinedUser.localizedString())
             userSession.send(completion: .failure(error))
         } catch SignInError.permissionsError {
             let error = SwiftError.systemMessage(501, SignInError.permissionsError.localizedString())
             userSession.send(completion: .failure(error))
-        } catch SignInError.failedUserData {
-            userSession.send(completion: .failure( SwiftError.message(SignInError.failedUserData.localizedString())))
+        } catch SignInError.userDataError {
+            userSession.send(completion: .failure( SwiftError.message(SignInError.userDataError.localizedString())))
         } catch {
             userSession.send(completion: .failure(SwiftError.message("Unexpected system error")))
         }
     }
     
     private func parseSignInResult(_ googleUser: GIDGoogleUser?, _ error: Error?) throws {
-        if let error {
-            throw SignInError.signInError(error)
-        } else if googleUser == nil {
-            throw SignInError.userIsUndefined
-        } else if let googleUser, checkPermissions(for: googleUser) {
-            createNewUser(for: googleUser)
-        } else {
-            throw SignInError.permissionsError
+        switch (googleUser, error) {
+        case (nil, .some(let error)):
+            throw SignInError.failedSignIn(error)
+        case (.some(let googleUser), nil):
+            if checkPermissions(for: googleUser) {
+                createNewUser(for: googleUser)
+            } else {
+                throw SignInError.permissionsError
+            }
+        case (nil, nil):
+            throw SignInError.undefinedUser
+        default:
+            break
         }
     }
     // [END signin_handler]
 }
 
-// MARK: - Check/Add the Scopes
+// MARK: - Check and Add the Scope Permissions
 
-extension GoogleInteractor {
+extension GoogleSignInService {
     private func checkPermissions(for user: GIDGoogleUser) -> Bool {
         guard let grantedScopes = user.grantedScopes else { return false }
         guard let scopePermissions = scopePermissions else { return true }
@@ -150,13 +152,13 @@ extension GoogleInteractor {
 
 // MARK: - Restore previous session
 
-extension GoogleInteractor {
+extension GoogleSignInService {
     func restorePreviousSession() async {
-        let googleUser = await requestPreviousUser()
+        let googleUser = await restorePreviousUser()
         createNewUser(for: googleUser)
     }
     
-    private func requestPreviousUser() async -> GIDGoogleUser {
+    private func restorePreviousUser() async -> GIDGoogleUser {
         return await withCheckedContinuation { continuation in
             // The source is here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
             GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
@@ -166,7 +168,9 @@ extension GoogleInteractor {
     }
 }
 
-extension GoogleInteractor {
+// MARK: - Create New User Session
+
+extension GoogleSignInService {
     /**
         There is just two ways to create a new user: restore previous one and after log in
      */
@@ -176,7 +180,7 @@ extension GoogleInteractor {
             let userSession = UserSession(profile: profile, remoteSession: remoteSession)
             self.userSession.send(userSession)
         } else {
-            userSession.send(completion: .failure( SwiftError.message(SignInError.failedUserData.localizedDescription)))
+            userSession.send(completion: .failure( SwiftError.message(SignInError.userDataError.localizedDescription)))
         }
     }
 }
