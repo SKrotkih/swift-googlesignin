@@ -48,7 +48,7 @@ class GoogleSignInService: NSObject, ObservableObject {
 // MARK: - SignInLaunchable protocol implementstion
 
 extension GoogleSignInService: SignInServiceProtocol {
-    /// Retrieving user information. The Client can use SignInButton too.
+    /// Signin in and get user accaunt data. Can be used SignInButton as well
     func signIn(with viewController: UIViewController) {
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
         GIDSignIn.sharedInstance.signIn(with: configurator.signInConfig,
