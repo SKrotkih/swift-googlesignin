@@ -6,190 +6,149 @@
 //
 
 import Foundation
+import UIKit
 import GoogleSignIn
-import GoogleSignInSwift
 import Combine
 
-// MARK: - Google SignIn Service Protocol
+/// Wraps `GIDSignIn` (Google Sign-In SDK 8) and publishes the session and errors separately,
+/// so an error never terminates the session stream.
+@MainActor
+final class GoogleSignInService {
+    /// Current session; `.empty` while signed out. Never fails.
+    let userSession = CurrentValueSubject<UserSession, Never>(.empty)
+    /// One event per failed operation.
+    let errors = PassthroughSubject<SignInError, Never>()
 
-typealias SignInServiceProtocol = SignInLaunchable & SignInObservable
+    private let configurator: SignInConfigurator
+    private let requiredScopes: [String]
 
-protocol SignInLaunchable {
-    func signIn(with viewController: UIViewController)
-    func signOut()
-    func addPermissions(with viewController: UIViewController)
-}
-
-protocol SignInObservable {
-    var userSession: CurrentValueSubject<UserSession, SwiftError> { get }
-}
-
-// MARK: - Google Sign In Service Implementation
-
-class GoogleSignInService: NSObject, ObservableObject {
-    var userSession: CurrentValueSubject<UserSession, SwiftError> = CurrentValueSubject(UserSession.empty)
-    
-    // Private, Internal variable
-    private var configurator: SignInConfigurator
-    private var scopePermissions: [String]?
-    
-    // lifecycle
-    init(configurator: SignInConfigurator,
-         scopePermissions: [String]?) {
+    init(configurator: SignInConfigurator, scopePermissions: [String]?) {
         self.configurator = configurator
-        self.scopePermissions = scopePermissions
-        super.init()
+        self.requiredScopes = scopePermissions ?? []
+        GIDSignIn.sharedInstance.configuration = configurator.signInConfig
+        Task { await restorePreviousSession(reportMissing: false) }
+    }
+
+    // MARK: - Sign in / out
+
+    /// Presents the Google sign-in sheet, asking for the required API scopes up front (one consent screen).
+    func signIn(presenting viewController: UIViewController) {
         Task {
-            await restorePreviousSession()
+            do {
+                let result = try await GIDSignIn.sharedInstance.signIn(
+                    withPresenting: viewController,
+                    hint: nil,
+                    additionalScopes: requiredScopes
+                )
+                publish(result.user)
+            } catch {
+                errors.send(SignInError.from(error))
+            }
         }
     }
-}
 
-// MARK: - SignInLaunchable protocol implementstion
-
-extension GoogleSignInService: SignInServiceProtocol {
-    /// Signin in and get user accaunt data. Can be used SignInButton as well
-    func signIn(with viewController: UIViewController) {
-        // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
-        // Ask for the API scopes up front (one consent screen) instead of checking them afterwards.
-        GIDSignIn.sharedInstance.signIn(with: configurator.signInConfig,
-                                        presenting: viewController,
-                                        hint: nil,
-                                        additionalScopes: scopePermissions ?? []) { [weak self] user, error in
-            guard let `self` = self else { return }
-            self.handleSignInResult(user, error)
-        }
-    }
-    
+    /// Signs out and disconnects the account from the app (Google's recommended clean-up).
     func signOut() {
         GIDSignIn.sharedInstance.signOut()
-        // It is highly recommended that you provide users that signed in with Google the
-        // ability to disconnect their Google account from your app. If the user deletes their account,
-        // you must delete the information that your app obtained from the Google APIs.
-        GIDSignIn.sharedInstance.disconnect { error in
-            switch error {
-            case .some(let error):
-                self.userSession.send(completion: .failure(SwiftError.message(error.localizedDescription)))
-            case .none:
-                // Google Account disconnected from your app.
-                // Perform clean-up actions, such as deleting data associated with the
-                //   disconnected account.
-                self.userSession.send(UserSession.empty)
+        userSession.send(.empty)
+        Task {
+            do {
+                try await GIDSignIn.sharedInstance.disconnect()
+            } catch {
+                // Already signed out locally; disconnect just failed to reach Google (e.g. offline).
+                errors.send(.signOutFailed(error))
             }
         }
     }
 
     func openUrl(_ url: URL) -> Bool {
-        // https://developers.google.com/identity/sign-in/ios/sign-in#ios_uiapplicationdelegate
-        return GIDSignIn.sharedInstance.handle(url)
+        GIDSignIn.sharedInstance.handle(url)
     }
-}
 
-// MARK: - Google Sign In Handler
+    // MARK: - Scopes
 
-extension GoogleSignInService {
-    // [START signin_handler]
-    private func handleSignInResult(_ user: GIDGoogleUser?, _ error: Error?) {
-        do {
-            try self.parseSignInResult(user, error)
-        } catch SignInError.failedSignIn(let error) {
-            if (error as NSError).code == GIDSignInError.hasNoAuthInKeychain.rawValue {
-                let text = "401: \(SignInError.failedSignIn(error).localizedString())"
-                userSession.send(completion: .failure(SwiftError.message(text)))
-            } else {
-                userSession.send(completion: .failure(SwiftError.message(error.localizedDescription)))
-            }
-        } catch SignInError.undefinedUser {
-            let error = SwiftError.systemMessage(401, SignInError.undefinedUser.localizedString())
-            userSession.send(completion: .failure(error))
-        } catch SignInError.permissionsError {
-            let error = SwiftError.systemMessage(501, SignInError.permissionsError.localizedString())
-            userSession.send(completion: .failure(error))
-        } catch SignInError.userDataError {
-            userSession.send(completion: .failure( SwiftError.message(SignInError.userDataError.localizedString())))
-        } catch {
-            userSession.send(completion: .failure(SwiftError.message("Unexpected system error")))
-        }
-    }
-    
-    private func parseSignInResult(_ googleUser: GIDGoogleUser?, _ error: Error?) throws {
-        switch (googleUser, error) {
-        case (nil, .some(let error)):
-            throw SignInError.failedSignIn(error)
-        case (.some(let googleUser), nil):
-            if checkPermissions(for: googleUser) {
-                createNewUser(for: googleUser)
-            } else {
-                throw SignInError.permissionsError
-            }
-        case (nil, nil):
-            throw SignInError.undefinedUser
-        default:
-            break
-        }
-    }
-    // [END signin_handler]
-}
-
-// MARK: - Check and Add the Scope Permissions
-
-extension GoogleSignInService {
-    private func checkPermissions(for user: GIDGoogleUser) -> Bool {
-        guard let grantedScopes = user.grantedScopes else { return false }
-        guard let scopePermissions = scopePermissions else { return true }
-        let currentScopes = grantedScopes.compactMap { $0 }
-        let havePermissions = currentScopes.contains(where: { scopePermissions.contains($0) })
-        return havePermissions
-    }
-    
-    func addPermissions(with viewController: UIViewController) {
-        guard let scopePermissions = scopePermissions else { return}
-        // Your app should be verified already, so it does not make sense. I think so.
-        GIDSignIn.sharedInstance.addScopes(scopePermissions,
-                                           presenting: viewController,
-                                           callback: { [weak self] user, error in
-            self?.handleSignInResult(user, error)
-        })
-    }
-}
-
-// MARK: - Restore previous session
-
-extension GoogleSignInService {
-    func restorePreviousSession() async {
-        guard let googleUser = await restorePreviousUser() else { return }
-        // A session restored without the required scopes is useless for API calls:
-        // drop it so the app shows the sign-in screen and a fresh consent is requested.
-        guard checkPermissions(for: googleUser) else {
-            GIDSignIn.sharedInstance.signOut()
+    /// Asks the signed-in user for the scopes they have not granted yet.
+    func addMissingScopes(presenting viewController: UIViewController) {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            errors.send(.noPreviousSignIn)
             return
         }
-        createNewUser(for: googleUser)
-    }
-    
-    private func restorePreviousUser() async -> GIDGoogleUser? {
-        return await withCheckedContinuation { continuation in
-            // The source is here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
-            GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
-                continuation.resume(returning: user)
+        let missing = missingScopes(for: user)
+        guard !missing.isEmpty else {
+            publish(user)
+            return
+        }
+        Task {
+            do {
+                let result = try await user.addScopes(missing, presenting: viewController)
+                publish(result.user)
+            } catch {
+                errors.send(SignInError.from(error))
             }
         }
     }
-}
 
-// MARK: - Create New User Session
+    private func missingScopes(for user: GIDGoogleUser) -> [String] {
+        let granted = Set(user.grantedScopes ?? [])
+        return requiredScopes.filter { !granted.contains($0) }
+    }
 
-extension GoogleSignInService {
-    /**
-        There is just two ways to create a new user: restore previous one and after log in
-     */
-    private func createNewUser(for googleUser: GIDGoogleUser) {
-        if let profile = UserProfile(googleUser),
-           let remoteSession = UserAuthentication(googleUser) {
-            let userSession = UserSession(profile: profile, remoteSession: remoteSession)
-            self.userSession.send(userSession)
-        } else {
-            userSession.send(completion: .failure( SwiftError.message(SignInError.userDataError.localizedDescription)))
+    // MARK: - Restore & refresh
+
+    /// Restores the Keychain session. A session that lacks the required scopes is dropped so the
+    /// app shows the sign-in screen and a fresh consent is requested.
+    func restorePreviousSession(reportMissing: Bool) async {
+        do {
+            let user = try await GIDSignIn.sharedInstance.restorePreviousSignIn()
+            publish(user)
+        } catch {
+            let mapped = SignInError.from(error)
+            if case .noPreviousSignIn = mapped, !reportMissing { return }
+            errors.send(mapped)
         }
+    }
+
+    /// Refreshes the access/id tokens if they are expired or about to expire, and republishes the session.
+    func refreshTokensIfNeeded() async throws -> UserSession {
+        guard let user = GIDSignIn.sharedInstance.currentUser else {
+            throw SignInError.noPreviousSignIn
+        }
+        do {
+            let fresh = try await user.refreshTokensIfNeeded()
+            guard let session = makeSession(fresh) else { throw SignInError.invalidUserData }
+            userSession.send(session)
+            return session
+        } catch let error as SignInError {
+            throw error
+        } catch {
+            let mapped = SignInError.refreshFailed(error)
+            GIDSignIn.sharedInstance.signOut()
+            userSession.send(.empty)
+            errors.send(mapped)
+            throw mapped
+        }
+    }
+
+    // MARK: - Publishing
+
+    /// Publishes the user as the current session, or reports why it cannot be used.
+    private func publish(_ user: GIDGoogleUser) {
+        let missing = missingScopes(for: user)
+        guard missing.isEmpty else {
+            GIDSignIn.sharedInstance.signOut()
+            userSession.send(.empty)
+            errors.send(.missingScopes(missing))
+            return
+        }
+        guard let session = makeSession(user) else {
+            errors.send(.invalidUserData)
+            return
+        }
+        userSession.send(session)
+    }
+
+    private func makeSession(_ user: GIDGoogleUser) -> UserSession? {
+        guard let profile = UserProfile(user), let auth = UserAuthentication(user) else { return nil }
+        return UserSession(profile: profile, remoteSession: auth)
     }
 }

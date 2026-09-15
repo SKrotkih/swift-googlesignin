@@ -8,36 +8,43 @@
 import Foundation
 import GoogleSignIn
 
-/// Google API parameters store
-/// It's a part of the UserSession structure data
-public struct UserAuthentication: Codable, Equatable {
+/// Google API credentials of the signed-in user. Part of ``UserSession``.
+public struct UserAuthentication: Codable, Equatable, Sendable {
     public let userId: String
     public let idToken: String
-    public let accessToken: String?
+    /// OAuth 2.0 access token for Google APIs. Refresh it with
+    /// ``SwiftGoogleSignInInterface/refreshTokensIfNeeded()`` before long-running work.
+    public let accessToken: String
+    /// When `accessToken` stops being accepted by Google APIs.
+    public let accessTokenExpirationDate: Date?
+    /// Scopes the user actually granted.
+    public let grantedScopes: [String]
+
+    public init(userId: String,
+                idToken: String,
+                accessToken: String,
+                accessTokenExpirationDate: Date? = nil,
+                grantedScopes: [String] = []) {
+        self.userId = userId
+        self.idToken = idToken
+        self.accessToken = accessToken
+        self.accessTokenExpirationDate = accessTokenExpirationDate
+        self.grantedScopes = grantedScopes
+    }
 
     init?(_ googleUser: GIDGoogleUser) {
-        if let userId = googleUser.userID,
-           let idToken = googleUser.authentication.idToken {
-            self.userId = userId
-            self.idToken = idToken
-            accessToken = googleUser.authentication.accessToken
-        } else {
-            return nil
-        }
+        guard let userId = googleUser.userID,
+              let idToken = googleUser.idToken?.tokenString else { return nil }
+        self.init(userId: userId,
+                  idToken: idToken,
+                  accessToken: googleUser.accessToken.tokenString,
+                  accessTokenExpirationDate: googleUser.accessToken.expirationDate,
+                  grantedScopes: googleUser.grantedScopes ?? [])
     }
-}
 
-func ==(lUser: UserAuthentication?, rUser: UserAuthentication?) -> Bool {
-    var isNotEqual = false
-    switch (lUser, rUser) {
-    case (nil, nil):
-        break
-    case (nil, _), (_, nil):
-        isNotEqual = true
-    default:
-        if lUser?.userId != rUser?.userId {
-            isNotEqual = true
-        }
+    /// `true` when the access token is missing or expires within `leeway` seconds.
+    public func isAccessTokenExpiring(within leeway: TimeInterval = 60) -> Bool {
+        guard let date = accessTokenExpirationDate else { return false }
+        return date.timeIntervalSinceNow < leeway
     }
-    return !isNotEqual
 }
