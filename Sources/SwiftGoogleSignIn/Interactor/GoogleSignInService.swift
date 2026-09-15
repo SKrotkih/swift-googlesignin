@@ -51,8 +51,11 @@ extension GoogleSignInService: SignInServiceProtocol {
     /// Signin in and get user accaunt data. Can be used SignInButton as well
     func signIn(with viewController: UIViewController) {
         // https://developers.google.com/identity/sign-in/ios/people#retrieving_user_information
+        // Ask for the API scopes up front (one consent screen) instead of checking them afterwards.
         GIDSignIn.sharedInstance.signIn(with: configurator.signInConfig,
-                                        presenting: viewController) { [weak self] user, error in
+                                        presenting: viewController,
+                                        hint: nil,
+                                        additionalScopes: scopePermissions ?? []) { [weak self] user, error in
             guard let `self` = self else { return }
             self.handleSignInResult(user, error)
         }
@@ -154,15 +157,21 @@ extension GoogleSignInService {
 
 extension GoogleSignInService {
     func restorePreviousSession() async {
-        let googleUser = await restorePreviousUser()
+        guard let googleUser = await restorePreviousUser() else { return }
+        // A session restored without the required scopes is useless for API calls:
+        // drop it so the app shows the sign-in screen and a fresh consent is requested.
+        guard checkPermissions(for: googleUser) else {
+            GIDSignIn.sharedInstance.signOut()
+            return
+        }
         createNewUser(for: googleUser)
     }
     
-    private func restorePreviousUser() async -> GIDGoogleUser {
+    private func restorePreviousUser() async -> GIDGoogleUser? {
         return await withCheckedContinuation { continuation in
             // The source is here: https://developers.google.com/identity/sign-in/ios/sign-in#3_attempt_to_restore_the_users_sign-in_state
             GIDSignIn.sharedInstance.restorePreviousSignIn { user, _ in
-                if let user { continuation.resume(with: .success(user)) }
+                continuation.resume(returning: user)
             }
         }
     }
