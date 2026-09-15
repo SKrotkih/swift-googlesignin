@@ -1,37 +1,28 @@
 //
 //  UserSession.swift
-//  
+//  SwiftGoogleSignIn Package
 //
 //  Created by Serhii Krotkykh on 7/18/22.
 //
 
 import Foundation
 
-/// The main structure with the User's account and connection info
-public struct UserSession {
-    
-    // MARK: - Properties
+/// The signed-in account and its Google API credentials. `UserSession()` means "signed out".
+public struct UserSession: Equatable, Sendable {
     public let profile: UserProfile?
     public let remoteSession: UserAuthentication?
-    
-    // MARK: - Methods
+
     public init(profile: UserProfile? = nil, remoteSession: UserAuthentication? = nil) {
         self.profile = profile
         self.remoteSession = remoteSession
     }
 
     public var isConnected: Bool {
-        return profile != nil && remoteSession != nil
+        profile != nil && remoteSession != nil
     }
 
-    static var empty: UserSession {
-        return UserSession()
-    }
-}
+    /// Shortcut for `remoteSession?.accessToken`.
+    public var accessToken: String? { remoteSession?.accessToken }
 
-extension UserSession: Equatable {
-    static public func ==(lhs: UserSession, rhs: UserSession) -> Bool {
-        return lhs.profile?.userId == rhs.profile?.userId &&
-        lhs.remoteSession?.accessToken == rhs.remoteSession?.accessToken
-    }
+    public static let empty = UserSession()
 }

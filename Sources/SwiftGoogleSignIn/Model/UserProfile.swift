@@ -8,9 +8,8 @@
 import Foundation
 import GoogleSignIn
 
-/// Of the User profile info
-/// It's a part of the UserSession structure data
-public struct UserProfile: Codable, Equatable {
+/// Public profile of the signed-in Google account. Part of ``UserSession``.
+public struct UserProfile: Codable, Equatable, Sendable {
     public let userId: String
     public let fullName: String
     public let givenName: String
@@ -18,31 +17,27 @@ public struct UserProfile: Codable, Equatable {
     public let profilePicUrl: URL?
     public let email: String
 
-    init?(_ user: GIDGoogleUser) {
-        if let userId = user.userID {
-            self.userId = userId
-            fullName = user.profile?.name ?? ""
-            givenName = user.profile?.givenName ?? ""
-            familyName = user.profile?.familyName ?? ""
-            profilePicUrl = user.profile?.imageURL(withDimension: 320)
-            email = user.profile?.email ?? ""
-        } else {
-            return nil
-        }
+    public init(userId: String,
+                fullName: String = "",
+                givenName: String = "",
+                familyName: String = "",
+                profilePicUrl: URL? = nil,
+                email: String = "") {
+        self.userId = userId
+        self.fullName = fullName
+        self.givenName = givenName
+        self.familyName = familyName
+        self.profilePicUrl = profilePicUrl
+        self.email = email
     }
-}
 
-public func ==(lUser: UserProfile?, rUser: UserProfile?) -> Bool {
-    var notEqual = false
-    switch (lUser, rUser) {
-    case (nil, nil):
-        break
-    case (nil, _), (_, nil):
-        notEqual = true
-    default:
-        if lUser?.userId != rUser?.userId {
-            notEqual = true
-        }
+    init?(_ user: GIDGoogleUser) {
+        guard let userId = user.userID else { return nil }
+        self.init(userId: userId,
+                  fullName: user.profile?.name ?? "",
+                  givenName: user.profile?.givenName ?? "",
+                  familyName: user.profile?.familyName ?? "",
+                  profilePicUrl: user.profile?.imageURL(withDimension: 320),
+                  email: user.profile?.email ?? "")
     }
-    return !notEqual
 }

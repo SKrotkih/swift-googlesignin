@@ -8,83 +8,105 @@
 import UIKit
 import Combine
 
+/// The package entry point. Main-actor bound, like the Google Sign-In SDK itself.
+@MainActor
 public let API: SwiftGoogleSignInInterface = PackageAPI()
+
+/// The package public interface.
 ///
-/// The Package Public Interface
-///
-public protocol SwiftGoogleSignInInterface {
-    /// Init method with Google API scope permissions
-    /// - Parameter scopePermissions: Google API scope permissions
+/// The session and the errors are separate streams: an error (cancelled sheet, missing scopes,
+/// network failure) is delivered on ``errorPublisher`` and the session stream keeps going, so the
+/// user can simply try again.
+@MainActor
+public protocol SwiftGoogleSignInInterface: AnyObject {
+    /// Call once at start-up, before anything else, with the Google API scopes the app needs
+    /// (`nil` or `[]` for plain sign-in). They are requested on the sign-in consent screen.
     func initialize(_ scopePermissions: [String]?)
-    /// Google user's connect state publisher
-    var publisher: AnyPublisher<UserSession, SwiftError> { get }
-    /// Please use SignInButton view for log in
-    func logIn()
-    /// Log out. Handle result via publisher
-    func logOut()
-    /// As optional we can send request with scopes
-    func requestPermissions()
-    /// The Client has to handle openUrl app delegate event
-    /// - Parameter url: URL from app delegate openUrl methode
-    func openUrl(_ url: URL) -> Bool
-    /// The Client has to set up UIViewController for Goggle SignIn UI base view
+
+    /// The current session (``UserSession/empty`` while signed out), then every change.
+    var publisher: AnyPublisher<UserSession, Never> { get }
+    /// One event per failed operation. See ``SignInError``.
+    var errorPublisher: AnyPublisher<SignInError, Never> { get }
+    /// The latest value of ``publisher``.
+    var session: UserSession { get }
+
+    /// The view controller Google Sign-In presents its sheet from. Set before ``logIn()``.
     var presentingViewController: UIViewController? { get set }
+
+    /// Presents the Google sign-in sheet (``SignInButton`` calls this).
+    func logIn()
+    /// Signs out and disconnects the account. The session becomes ``UserSession/empty``.
+    func logOut()
+    /// Asks the signed-in user for the scopes from `initialize(_:)` they have not granted yet.
+    func requestPermissions()
+    /// Re-runs the Keychain restore; a missing previous sign-in is reported on ``errorPublisher``.
+    func restorePreviousSignIn() async
+    /// Refreshes expired (or about to expire) tokens and returns the updated session.
+    /// Use it from a `TokenProvider` when an API call answers 401.
+    @discardableResult
+    func refreshTokensIfNeeded() async throws -> UserSession
+
+    /// Forward `application(_:open:options:)` / `onOpenURL` here.
+    func openUrl(_ url: URL) -> Bool
 }
 
-///
-/// The Package Public Interface implementation
-///
-open class PackageAPI: SwiftGoogleSignInInterface {
+@MainActor
+final class PackageAPI: SwiftGoogleSignInInterface {
     private var scopePermissions: [String]?
-    
-    /// Scope permissions (SP) depend on your app functionality: some API requests requare accepted permissions. Keep it in mind.
-    /// If you don't provide the SP the package tries to send API request by force.
-    ///
+
     public func initialize(_ scopePermissions: [String]?) {
         self.scopePermissions = scopePermissions
     }
 
-    lazy private var configurator: GoogleConfigurator = {
-        let localDataBase = LocalStorage()
-        return GoogleConfigurator(localStorage: localDataBase)
+    private lazy var interactor: GoogleSignInService = {
+        let configurator = GoogleConfigurator(localStorage: LocalStorage())
+        return GoogleSignInService(configurator: configurator, scopePermissions: scopePermissions)
     }()
 
-    lazy private var interactor: GoogleSignInService = {
-        return GoogleSignInService(configurator: configurator,
-                                scopePermissions: scopePermissions)
-    }()
-
-    /// The Client can subscribe on the Google user's connect state
-    public var publisher: AnyPublisher<UserSession, SwiftError> {
-        return interactor.userSession.eraseToAnyPublisher()
+    public var publisher: AnyPublisher<UserSession, Never> {
+        interactor.userSession.eraseToAnyPublisher()
     }
 
-    /// Handle openUrl app delegate event
-    public func openUrl(_ url: URL) -> Bool {
-        return interactor.openUrl(url)
+    public var errorPublisher: AnyPublisher<SignInError, Never> {
+        interactor.errors.eraseToAnyPublisher()
     }
-    
-    /// Provide viewcontroller used for Goggle SignIn base view
+
+    public var session: UserSession {
+        interactor.userSession.value
+    }
+
     public var presentingViewController: UIViewController?
-    
-    /// Log in Google account. Use SignInButton for that
+
     public func logIn() {
-        if presentingViewController == nil {
-            assertionFailure("Please send presentingViewController before")
+        guard let presentingViewController else {
+            assertionFailure("Set API.presentingViewController before calling logIn()")
+            return
         }
-        interactor.signIn(with: presentingViewController!)
+        interactor.signIn(presenting: presentingViewController)
     }
-    
-    /// Log out from the User's Google Account
+
     public func logOut() {
         interactor.signOut()
     }
 
-    /// As optional we can send request with scopes
     public func requestPermissions() {
-        if presentingViewController == nil {
-            assertionFailure("Please send presentingViewController before")
+        guard let presentingViewController else {
+            assertionFailure("Set API.presentingViewController before calling requestPermissions()")
+            return
         }
-        interactor.addPermissions(with: presentingViewController!)
+        interactor.addMissingScopes(presenting: presentingViewController)
+    }
+
+    public func restorePreviousSignIn() async {
+        await interactor.restorePreviousSession(reportMissing: true)
+    }
+
+    @discardableResult
+    public func refreshTokensIfNeeded() async throws -> UserSession {
+        try await interactor.refreshTokensIfNeeded()
+    }
+
+    public func openUrl(_ url: URL) -> Bool {
+        interactor.openUrl(url)
     }
 }

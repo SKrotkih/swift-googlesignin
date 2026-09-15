@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ios:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pick an iOS simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available --json | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          for rt,devs in d.items():
+              if "iOS" in rt:
+                  for dev in devs:
+                      if dev["name"].startswith("iPhone"):
+                          print(dev["udid"]); sys.exit()')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+      - name: Build and test
+        run: |
+          xcodebuild test -scheme SwiftGoogleSignIn \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO

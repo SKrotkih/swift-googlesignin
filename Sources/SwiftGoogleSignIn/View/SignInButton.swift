@@ -8,19 +8,15 @@
 import SwiftUI
 import GoogleSignInSwift
 
-/// SwiftUI content view for the Google Sign In button
-/// Just place this button on your LogIn view
+/// Google's sign-in button; place it on your log-in view. Tapping it calls `API.logIn()`.
 public struct SignInButton: View {
-    public init() { }
-    
-    @Environment(\.colorScheme) var colorSheme: ColorScheme
-    
+    @Environment(\.colorScheme) private var colorScheme
+
+    public init() {}
+
     public var body: some View {
-        // https://developers.google.com/identity/sign-in/ios/sign-in#4_add_a_google_sign-in_button
-        GoogleSignInButton(scheme: self.colorSheme == .dark ? .dark : .light,
-                           style: .standard,
-                           action: {
+        GoogleSignInButton(scheme: colorScheme == .dark ? .dark : .light, style: .standard) {
             API.logIn()
-        })
+        }
     }
 }
