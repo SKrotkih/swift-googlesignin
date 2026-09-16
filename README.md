@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://github.com/SKrotkih/swift-googlesignin/actions/workflows/ci.yml"><img src="https://github.com/SKrotkih/swift-googlesignin/actions/workflows/ci.yml/badge.svg"/></a>
-  <img src="https://img.shields.io/badge/swift-5.9-orange"/>
-  <img src="https://img.shields.io/badge/iOS-15%2B-blue"/>
+  <a href="https://swiftpackageindex.com/SKrotkih/swift-googlesignin"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSKrotkih%2Fswift-googlesignin%2Fbadge%3Ftype%3Dswift-versions"/></a>
+  <a href="https://swiftpackageindex.com/SKrotkih/swift-googlesignin"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FSKrotkih%2Fswift-googlesignin%2Fbadge%3Ftype%3Dplatforms"/></a>
   <img src="https://img.shields.io/badge/License-MIT-yellow"/>
 </p>
 
