@@ -124,7 +124,7 @@ struct GoogleTokenProvider: TokenProvider {
 ## Interface
 
 ```swift
-@MainActor public protocol SwiftGoogleSignInInterface: AnyObject {
+@MainActor public protocol SwiftGoogleSignInInterface: AnyObject, Sendable {
     func initialize(_ scopePermissions: [String]?)
     var publisher: AnyPublisher<UserSession, Never> { get }
     var errorPublisher: AnyPublisher<SignInError, Never> { get }

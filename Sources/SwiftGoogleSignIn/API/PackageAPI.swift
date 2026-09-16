@@ -18,7 +18,7 @@ public let API: SwiftGoogleSignInInterface = PackageAPI()
 /// network failure) is delivered on ``errorPublisher`` and the session stream keeps going, so the
 /// user can simply try again.
 @MainActor
-public protocol SwiftGoogleSignInInterface: AnyObject {
+public protocol SwiftGoogleSignInInterface: AnyObject, Sendable {
     /// Call once at start-up, before anything else, with the Google API scopes the app needs
     /// (`nil` or `[]` for plain sign-in). They are requested on the sign-in consent screen.
     func initialize(_ scopePermissions: [String]?)
