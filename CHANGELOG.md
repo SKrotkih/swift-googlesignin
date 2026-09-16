@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.1 — 2026-09-16
+
+- `SwiftGoogleSignInInterface` now inherits `Sendable`, so `any SwiftGoogleSignInInterface`
+  (e.g. the global `API`) can be referenced from Swift 6 clients across actor boundaries
+  without a "non-Sendable type … cannot exit main actor-isolated context" error.
+  The conformer is `@MainActor`, so this is sound.
+
 ## 2.0.0 — 2026-09-15
 
 - Google Sign-In SDK **8.x** (`GIDSignIn.configuration`, `signIn(withPresenting:hint:additionalScopes:)`, async API, privacy manifest).
