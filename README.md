@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/SKrotkih/SwiftGoogleSignIn/actions/workflows/ci.yml"><img src="https://github.com/SKrotkih/SwiftGoogleSignIn/actions/workflows/ci.yml/badge.svg"/></a>
+  <a href="https://github.com/SKrotkih/swift-googlesignin/actions/workflows/ci.yml"><img src="https://github.com/SKrotkih/swift-googlesignin/actions/workflows/ci.yml/badge.svg"/></a>
   <img src="https://img.shields.io/badge/swift-5.9-orange"/>
   <img src="https://img.shields.io/badge/iOS-15%2B-blue"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow"/>
@@ -20,12 +20,12 @@ iOS 15+, Swift 5.9 / Xcode 15+, GoogleSignIn-iOS 8.x (pulled in automatically).
 
 ## Installation
 
-Xcode → **File ▸ Add Package Dependencies…** → `https://github.com/SKrotkih/SwiftGoogleSignIn.git`, **Up to Next Major** from `2.0.0`.
+Xcode → **File ▸ Add Package Dependencies…** → `https://github.com/SKrotkih/swift-googlesignin.git`, **Up to Next Major** from `2.0.0`.
 
 Or in `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/SKrotkih/SwiftGoogleSignIn.git", from: "2.0.0")
+.package(url: "https://github.com/SKrotkih/swift-googlesignin.git", from: "2.0.0")
 ```
 
 ## Setup
